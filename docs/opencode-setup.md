@@ -4,23 +4,20 @@ This guide explains how to use Agent Skills with OpenCode in a way that closely 
 
 ## Overview
 
-OpenCode supports custom `/commands`, but does not have a native plugin system or automatic skill routing like Claude Code.
-
-Instead, we achieve parity through:
+OpenCode does not have a native plugin system, but it supports both automatic skill routing and custom `/commands`. This integration ships both:
 
 - A strong system prompt (`AGENTS.md`)
 - The built-in `skill` tool
-- Consistent skill discovery from the `/skills` directory
+- Consistent skill discovery from the `skills/` directory
+- Optional slash commands in `.opencode/commands/` for users who prefer explicit, manual invocation over relying on intent detection
 
-This creates an **agent-driven workflow** where skills are selected and executed automatically.
+This creates an **agent-driven workflow** by default, where skills are selected and executed automatically, while still giving you `/spec`, `/plan`, and the rest of the lifecycle commands when you want to trigger a workflow explicitly.
 
-While it is possible to recreate `/spec`, `/plan`, and other commands in OpenCode, this integration intentionally uses an agent-driven approach instead:
-
-- Skills are selected automatically based on intent
+- Skills are selected automatically based on intent, or explicitly via slash command
 - Workflows are enforced via `AGENTS.md`
-- No manual command invocation is required
+- No manual command invocation is required — but it's available
 
-This more closely matches how Claude Code behaves in practice, where skills are triggered automatically rather than manually.
+This more closely matches how Claude Code behaves in practice, where skills are triggered automatically but slash commands remain available as an explicit entry point.
 
 ---
 
@@ -38,6 +35,8 @@ git clone https://github.com/addyosmani/agent-skills.git
 
 - `AGENTS.md` (root)
 - `skills/` directory
+- `.opencode/commands/` directory (optional slash commands — see [Slash Commands](#slash-commands) below)
+- `opencode.json` (root) — grants the `plan` agent a narrow write exception; see [Slash Commands](#slash-commands) below
 
 No additional installation is required.
 
@@ -83,7 +82,59 @@ The development lifecycle is encoded implicitly:
 - REVIEW → `code-review-and-quality`
 - SHIP → `shipping-and-launch`
 
-This replaces slash commands like `/spec`, `/plan`, etc.
+Each lifecycle phase also has a matching slash command (see below) for when you'd rather trigger it explicitly instead of relying on intent detection.
+
+---
+
+## Slash Commands
+
+The repo ships 8 slash commands under `.opencode/commands/`: 7 lifecycle commands plus the `/webperf` specialist audit. OpenCode auto-discovers them when you run from the project root.
+
+| Command | What it does |
+|---------|---------------|
+| `/spec` | Write a structured spec before writing code |
+| `/plan` | Break work into small, verifiable tasks (runs in OpenCode's read-only `plan` agent mode) |
+| `/build` | Implement the next task incrementally |
+| `/build auto` | Generate the plan if needed, get one approval, then implement every task without stopping |
+| `/test` | Run TDD workflow — red, green, refactor |
+| `/review` | Five-axis code review (runs in OpenCode's read-only `plan` agent mode) |
+| `/code-simplify` | Reduce complexity without changing behavior |
+| `/ship` | Pre-launch checklist via parallel persona fan-out |
+| `/webperf` | Audit browser-facing apps for Core Web Vitals and performance issues |
+
+Each command invokes the corresponding skill automatically — no manual skill loading required.
+
+> **Note:** `/ship` and `/webperf` fan out to specialist personas (`code-reviewer`, `security-auditor`, `test-engineer`, `web-performance-auditor`). OpenCode auto-discovers subagents from project-local `.opencode/agents/` first, then the global `~/.config/opencode/agents/` — not this repo's root `agents/` folder. Either location is enough to enable automatic parallel dispatch; you only need to copy the persona files you want to use into `.opencode/agents/` or `~/.config/opencode/agents/` if you don't already have equivalents in either. If the same persona name exists in both, the project-local copy wins. Both commands fall back to running the personas sequentially in the main context only when a persona is missing from both locations.
+
+### Where planning artifacts live
+
+Unlike the other tool integrations (which write `SPEC.md` and `tasks/plan.md`/`tasks/todo.md` at the project root), the OpenCode commands write everything under `.opencode/`:
+
+- `/spec` → `.opencode/spec/SPEC.md`
+- `/plan` → `.opencode/tasks/plan.md` and `.opencode/tasks/todo.md`
+- `/build` reads from those same paths
+
+This keeps generated artifacts out of the way of anything your own project already has at its root, and gives `/plan`'s permission exception (below) a clean directory to scope to.
+
+`/plan` and `/review` run under OpenCode's built-in `plan` agent, which denies `edit` (and therefore `write`) by default — the same read-only guarantee as Claude Code's plan mode. `/review` never needs to write anything, so that's a non-issue for it. `/plan`, however, is contractually required by the `planning-and-task-breakdown` skill to persist its output, so the root-level `opencode.json` grants the `plan` agent a narrow exception:
+
+```jsonc
+{
+  "agent": {
+    "plan": {
+      "permission": {
+        "edit": {
+          "*": "deny",
+          ".opencode/tasks/plan.md": "allow",
+          ".opencode/tasks/todo.md": "allow"
+        }
+      }
+    }
+  }
+}
+```
+
+Everything else stays denied in `plan` mode — this mirrors Claude Code's plan-mode behavior of allowing writes only to its own designated plan file.
 
 ---
 
@@ -145,9 +196,9 @@ These rules are enforced via `AGENTS.md`.
 
 ## Limitations
 
-- No native slash commands (handled via intent mapping instead)
 - No plugin system (handled via prompt + structure)
 - Skill invocation depends on model compliance
+- Slash commands are optional and additive — the agent-driven flow above works with or without them, and `/ship`/`/webperf` need personas copied into `.opencode/agents/` to fan out automatically (see [Slash Commands](#slash-commands))
 
 Despite these, the workflow closely matches Claude Code in practice.
 
@@ -174,5 +225,6 @@ OpenCode integration works by combining:
 - Structured skills (this repo)
 - Strong agent rules (`AGENTS.md`)
 - Automatic skill invocation via reasoning
+- Optional slash commands (`.opencode/commands/`) for explicit, manual invocation
 
-This results in a **fully agent-driven, production-grade engineering workflow** without requiring plugins or manual commands.
+This results in a **fully agent-driven, production-grade engineering workflow** without requiring a plugin system — with manual commands available whenever you want them.

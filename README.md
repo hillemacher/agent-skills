@@ -145,7 +145,7 @@ Add skill contents to your Windsurf rules configuration. See [docs/windsurf-setu
 <details>
 <summary><b>OpenCode</b></summary>
 
-Uses agent-driven skill execution via AGENTS.md and the `skill` tool.
+Uses agent-driven skill execution via AGENTS.md and the `skill` tool by default, plus 8 optional slash commands in `.opencode/commands/` for explicit invocation.
 
 See [docs/opencode-setup.md](docs/opencode-setup.md).
 
@@ -354,6 +354,7 @@ agent-skills/
 ├── hooks/                             # Session lifecycle hooks
 ├── .claude/commands/                  # 8 slash commands (Claude Code)
 ├── .gemini/commands/                  # 8 slash commands (Gemini CLI)
+├── .opencode/commands/                # 8 slash commands (OpenCode)
 ├── commands/                          # 8 slash commands (Antigravity CLI)
 ├── plugin.json                        # Antigravity plugin manifest
 └── docs/                              # Setup guides per tool
