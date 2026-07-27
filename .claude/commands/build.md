@@ -13,7 +13,7 @@ Invoke the agent-skills:incremental-implementation skill alongside agent-skills:
 
 ## Default: one task
 
-Pick the next pending task from the plan. Then:
+Pick the next pending task from `tasks/todo.md`, using `tasks/plan.md` for its full acceptance criteria and context. Then:
 
 1. Read the task's acceptance criteria
 2. Load relevant context (existing code, patterns, types)
@@ -22,7 +22,7 @@ Pick the next pending task from the plan. Then:
 5. Run the full test suite to check for regressions
 6. Run the build to verify compilation
 7. Commit with a descriptive message
-8. Mark the task complete and stop
+8. Mark the task complete in `tasks/todo.md` and stop
 
 ## Autonomous: the whole plan (`/build auto`)
 
