@@ -8,7 +8,7 @@ OpenCode does not have a native plugin system, but it supports both automatic sk
 
 - A strong system prompt (`AGENTS.md`)
 - The built-in `skill` tool
-- Consistent skill discovery from the `skills/` directory
+- Consistent skill discovery via the `.opencode/skills` symlink to the `skills/` directory
 - Optional slash commands in `.opencode/commands/` for users who prefer explicit, manual invocation over relying on intent detection
 
 This creates an **agent-driven workflow** by default, where skills are selected and executed automatically, while still giving you `/spec`, `/plan`, and the rest of the lifecycle commands when you want to trigger a workflow explicitly.
@@ -35,6 +35,7 @@ git clone https://github.com/addyosmani/agent-skills.git
 
 - `AGENTS.md` (root)
 - `skills/` directory
+- `.opencode/skills` — a symlink to `../skills/`, already committed in this repo. OpenCode's `skill` tool only auto-discovers `SKILL.md` files under `.opencode/skills/`, `.claude/skills/`, or `.agents/skills/` (or their global equivalents) — a bare root `skills/` directory is not itself a discovery path
 - `.opencode/commands/` directory (optional slash commands — see [Slash Commands](#slash-commands) below)
 - `opencode.json` (root) — grants the `plan` agent a narrow write exception; see [Slash Commands](#slash-commands) below
 
@@ -46,11 +47,15 @@ No additional installation is required.
 
 ### 1. Skill Discovery
 
-All skills live in:
+OpenCode's `skill` tool only auto-discovers `SKILL.md` files under `.opencode/skills/`, `.claude/skills/`, or `.agents/skills/` (project-local, walking up to the git root) — or their global equivalents under `~/.config/opencode/skills/`, `~/.claude/skills/`, `~/.agents/skills/`. A bare project-root `skills/` directory is **not** itself a discovery path.
+
+This repo keeps the actual skill content in `skills/<skill-name>/SKILL.md` — shared with every other tool integration (Claude Code plugin, Cursor, Copilot, etc.) — and exposes it to OpenCode via a symlink, already committed in this repo:
 
 ```
-skills/<skill-name>/SKILL.md
+.opencode/skills -> ../skills/
 ```
+
+**If you're copying these skills into a separate project** that only needs OpenCode support, the simplest option is to copy the skill folders directly into `.opencode/skills/<skill-name>/SKILL.md` — no root-level `skills/` needed. Only use the symlink approach (a root `skills/` plus `.opencode/skills` pointing to it) if you also want other tools like Claude Code or Cursor to share the same skill files.
 
 OpenCode agents are instructed (via `AGENTS.md`) to:
 
