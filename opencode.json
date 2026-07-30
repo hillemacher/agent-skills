@@ -5,6 +5,7 @@
       "permission": {
         "edit": {
           "*": "deny",
+          ".opencode/spec/SPEC.md": "allow",
           ".opencode/tasks/plan.md": "allow",
           ".opencode/tasks/todo.md": "allow"
         }

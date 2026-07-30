@@ -29,9 +29,9 @@ This more closely matches how Claude Code behaves in practice, where skills are 
 git clone https://github.com/addyosmani/agent-skills.git
 ```
 
-2. Open the project in OpenCode.
+1. Open the project in OpenCode.
 
-3. Ensure the following files are present in your workspace:
+2. Ensure the following files are present in your workspace:
 
 - `AGENTS.md` (root)
 - `skills/` directory
@@ -56,6 +56,68 @@ This repo keeps the actual skill content in `skills/<skill-name>/SKILL.md` — s
 ```
 
 **If you're copying these skills into a separate project** that only needs OpenCode support, the simplest option is to copy the skill folders directly into `.opencode/skills/<skill-name>/SKILL.md` — no root-level `skills/` needed. Only use the symlink approach (a root `skills/` plus `.opencode/skills` pointing to it) if you also want other tools like Claude Code or Cursor to share the same skill files.
+
+#### Example: AGENTS.md excerpt for a separate project
+
+OpenCode doesn't auto-discover skill-routing rules — they have to be spelled out in the system prompt. Append this to whatever your project's `AGENTS.md` already contains (don't replace it):
+
+```markdown
+## Skill-Driven Execution
+
+This project uses a **skill-driven execution model** powered by the `skill` tool and the `.opencode/skills/` directory.
+
+### Core Rules
+
+- If a task matches a skill, you MUST invoke it
+- Skills are located in `.opencode/skills/<skill-name>/SKILL.md`
+- Never implement directly if a skill applies
+- Always follow the skill instructions exactly (do not partially apply them)
+
+### Intent → Skill Mapping
+
+Map user intent to the skills you've actually copied, for example:
+
+- Feature / new functionality → `spec-driven-development`, then `incremental-implementation`, `test-driven-development`
+- Bug / failure / unexpected behavior → `debugging-and-error-recovery`
+- Code review → `code-review-and-quality`
+
+### Execution Model
+
+For every request:
+
+1. Determine if any skill applies (even 1% chance)
+2. Invoke the appropriate skill using the `skill` tool
+3. Follow the skill workflow strictly
+4. Only proceed to implementation after required steps (spec, plan, etc.) are complete
+
+### Anti-Rationalization
+
+The following thoughts are incorrect and must be ignored:
+
+- "This is too small for a skill"
+- "I can just quickly implement this"
+- "I'll gather context first"
+
+Correct behavior: always check for and use skills first.
+```
+
+Trim the Intent → Skill Mapping list down to only the skills you actually copied — listing one that isn't present just gives the model a dead end to invoke.
+
+If you also copied personas into `.opencode/agents/` and commands into `.opencode/commands/`, append this section too:
+
+```markdown
+## Orchestration: Personas, Skills, and Commands
+
+Three layers, different jobs:
+
+- **Skills** (`.opencode/skills/<name>/SKILL.md`) — workflows with steps and exit criteria. The *how*.
+- **Personas** (`.opencode/agents/<role>.md`) — roles with a perspective and an output format. The *who*.
+- **Slash commands** (`.opencode/commands/*.md`) — user-facing entry points. The *when*.
+
+Composition rule: the user (or a slash command) is the orchestrator. **Personas do not invoke other personas.** A persona may invoke skills.
+
+The only multi-persona pattern is **parallel fan-out with a merge step** — used by `/ship` to run `code-reviewer`, `security-auditor`, and `test-engineer` concurrently and synthesize their reports. Don't build a "router" persona that decides which other persona to call.
+```
 
 OpenCode agents are instructed (via `AGENTS.md`) to:
 
@@ -96,7 +158,7 @@ Each lifecycle phase also has a matching slash command (see below) for when you'
 The repo ships 8 slash commands under `.opencode/commands/`: 7 lifecycle commands plus the `/webperf` specialist audit. OpenCode auto-discovers them when you run from the project root.
 
 | Command | What it does |
-|---------|---------------|
+| --------- | --------------- |
 | `/spec` | Write a structured spec before writing code |
 | `/plan` | Break work into small, verifiable tasks (runs in OpenCode's read-only `plan` agent mode) |
 | `/build` | Implement the next task incrementally |
@@ -130,6 +192,7 @@ This keeps generated artifacts out of the way of anything your own project alrea
       "permission": {
         "edit": {
           "*": "deny",
+          ".opencode/spec/SPEC.md": "allow",
           ".opencode/tasks/plan.md": "allow",
           ".opencode/tasks/todo.md": "allow"
         }
@@ -148,11 +211,13 @@ Everything else stays denied in `plan` mode — this mirrors Claude Code's plan-
 ### Example 1: Feature Development
 
 User:
+
 ```
 Add authentication to this app
 ```
 
 Agent behavior:
+
 - Detects feature work
 - Invokes `spec-driven-development`
 - Produces a spec before writing code
@@ -163,11 +228,13 @@ Agent behavior:
 ### Example 2: Bug Fix
 
 User:
+
 ```
 This endpoint is returning 500 errors
 ```
 
 Agent behavior:
+
 - Invokes `debugging-and-error-recovery`
 - Reproduces → localizes → fixes → adds guards
 
@@ -176,11 +243,13 @@ Agent behavior:
 ### Example 3: Code Review
 
 User:
+
 ```
 Review this PR
 ```
 
 Agent behavior:
+
 - Invokes `code-review-and-quality`
 - Applies structured review (correctness, design, readability, etc.)
 
