@@ -37,7 +37,7 @@ git clone https://github.com/addyosmani/agent-skills.git
 - `skills/` directory
 - `.opencode/skills` — a symlink to `../skills/`, already committed in this repo. OpenCode's `skill` tool only auto-discovers `SKILL.md` files under `.opencode/skills/`, `.claude/skills/`, or `.agents/skills/` (or their global equivalents) — a bare root `skills/` directory is not itself a discovery path
 - `.opencode/commands/` directory (optional slash commands — see [Slash Commands](#slash-commands) below)
-- `opencode.json` (root) — grants the `plan` agent a narrow write exception; see [Slash Commands](#slash-commands) below
+- `.opencode/opencode.json` — grants the `plan` agent a narrow write exception; see [Slash Commands](#slash-commands) below
 
 No additional installation is required.
 
@@ -183,7 +183,7 @@ Unlike the other tool integrations (which write `SPEC.md` and `tasks/plan.md`/`t
 
 This keeps generated artifacts out of the way of anything your own project already has at its root, and gives `/plan`'s permission exception (below) a clean directory to scope to.
 
-`/plan` and `/review` run under OpenCode's built-in `plan` agent, which denies `edit` (and therefore `write`) by default — the same read-only guarantee as Claude Code's plan mode. `/review` never needs to write anything, so that's a non-issue for it. `/plan`, however, is contractually required by the `planning-and-task-breakdown` skill to persist its output, so the root-level `opencode.json` grants the `plan` agent a narrow exception:
+`/plan` and `/review` run under OpenCode's built-in `plan` agent, which denies `edit` (and therefore `write`) by default — the same read-only guarantee as Claude Code's plan mode. `/review` never needs to write anything, so that's a non-issue for it. `/plan`, however, is contractually required by the `planning-and-task-breakdown` skill to persist its output, so `.opencode/opencode.json` grants the `plan` agent a narrow exception:
 
 ```jsonc
 {
