@@ -40,6 +40,9 @@ jobs:
       - name: Validate commands across all tool directories
         run: node scripts/validate-commands.js
 
+      - name: Test command validator
+        run: node --test scripts/validate-commands-test.js
+
   validate:
     name: Validate plugin structure
     needs: [validate-skills, validate-commands]
