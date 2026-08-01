@@ -57,6 +57,13 @@ npx skills add addyosmani/agent-skills --skill interview-me              # requi
 npx skills add addyosmani/agent-skills --skill test-driven-development   # red-green-refactor, enforced
 ```
 
+> **Installing one skill?** A per-skill `npx` install copies only
+> `skills/<name>/`, not the repo-level `references/` directory. The skill still
+> works, but paths to supplementary shared checklists are unavailable. Use a
+> whole-repo integration, clone the repository, or copy the needed checklist into
+> a `references/` directory inside the installed skill. This portability gap is
+> tracked in [#361](https://github.com/addyosmani/agent-skills/issues/361).
+
 Prefer a native integration? Pick your tool below.
 
 <details>
