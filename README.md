@@ -184,6 +184,21 @@ Codex reads the root `skills/` directory directly through `.codex-plugin/plugin.
 </details>
 
 <details>
+<summary><b>Command Code</b></summary>
+
+Install natively with the built-in `cmd skills` command. Command Code clones the repo, discovers every `SKILL.md`, and installs into `.commandcode/skills/`:
+
+```bash
+cmd skills add addyosmani/agent-skills            # pick skills to install (project)
+cmd skills add addyosmani/agent-skills --global   # install for all projects (~/.commandcode/skills/)
+cmd skills add addyosmani/agent-skills -s spec-driven-development  # install a specific skill
+```
+
+Installed skills show up in the TUI slash menu, e.g. `/spec-driven-development`. See [docs/commandcode-setup.md](docs/commandcode-setup.md).
+
+</details>
+
+<details>
 <summary><b>Other Agents</b></summary>
 
 Skills are plain Markdown - they work with any agent that accepts system prompts or instruction files. See [docs/getting-started.md](docs/getting-started.md).
