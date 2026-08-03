@@ -2,7 +2,7 @@
 
 [Command Code](https://commandcode.ai) has a native skills system. The built-in `cmd skills` command clones a GitHub repo, recursively discovers every `SKILL.md`, and installs the ones you pick.
 
-The Command Code binary is available as `cmd` (and the aliases `cmdc` on Windows / `command-code`). The examples below use `cmd`.
+The Command Code binary is available as `cmd` (with aliases `cmdc` on Windows and `command-code`). The examples below use `cmd`.
 
 ## Install
 
