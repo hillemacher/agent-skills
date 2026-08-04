@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -19,6 +21,12 @@ jobs:
 
       - name: Validate all skills
         run: node scripts/validate-skills.js
+
+      - name: Validate manifest versions
+        run: node scripts/validate-versions.js
+
+      - name: Test manifest version validator
+        run: node --test scripts/validate-versions-test.js
 
       - name: Test skill eval runner
         run: node --test scripts/run-evals-test.js
