@@ -498,6 +498,7 @@ function runBehavioral(skillName, dryRun) {
     // edit files and run commands in the throwaway workspace; without it,
     // headless denials would force the exact narrate-instead-of-perform
     // failure mode that trace grading exists to catch.
+    try {
     const trace = execFileSync(
       'claude',
       ['-p', '--verbose', '--output-format', 'stream-json',
@@ -536,6 +537,11 @@ function runBehavioral(skillName, dryRun) {
     fs.writeFileSync(`${base}.grading.json`, JSON.stringify(grading, null, 2) + '\n');
     console.log(`eval ${ev.id}: ${grading.summary.passed}/${grading.summary.total} expectations passed -> ${path.relative(ROOT, base)}.grading.json`);
     if (grading.summary.passed < grading.summary.total) failures++;
+    } finally {
+      // Clean up throwaway workspace to prevent leaking fixture data
+      // into world-readable temp directories.
+      try { fs.rmSync(workspace, { recursive: true, force: true }); } catch { /* best-effort */ }
+    }
   }
   process.exit(failures ? 1 : 0);
 }
