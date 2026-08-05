@@ -177,9 +177,10 @@ Install as a native Codex plugin (Codex CLI v0.122+):
 
 ```bash
 codex plugin marketplace add addyosmani/agent-skills
+codex plugin add agent-skills@agent-skills
 ```
 
-Codex reads the root `skills/` directory directly through `.codex-plugin/plugin.json`. Once installed, invoke skills in chat using `@` (e.g., `@spec-driven-development`). See [docs/codex-setup.md](docs/codex-setup.md) for local installation and troubleshooting.
+The first command registers the marketplace; the second installs the plugin. Codex reads the root `skills/` directory directly through `.codex-plugin/plugin.json`. Once installed, invoke skills in chat using `@` (e.g., `@spec-driven-development`). See [docs/codex-setup.md](docs/codex-setup.md) for local installation and troubleshooting.
 
 </details>
 
