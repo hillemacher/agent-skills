@@ -51,6 +51,12 @@ jobs:
       - name: Test command validator
         run: node --test scripts/validate-commands-test.js
 
+      - name: Validate spec/plan/todo artifact paths
+        run: node scripts/validate-artifact-paths.js
+
+      - name: Test artifact-path validator
+        run: node --test scripts/validate-artifact-paths-test.js
+
   validate:
     name: Validate plugin structure
     needs: [validate-skills, validate-commands]
