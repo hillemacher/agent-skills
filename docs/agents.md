@@ -114,9 +114,13 @@ Subagents only report results back to the main agent. Agent Teams let teammates 
 
 Plugin agents do not support `hooks`, `mcpServers`, or `permissionMode` frontmatter — those fields are silently ignored. Avoid relying on them when authoring new personas here.
 
+## OpenCode interop
+
+Every persona ships `mode: subagent` in its frontmatter. OpenCode's `mode` option controls how an agent can be invoked (`primary`, `subagent`, or `all`; default `all`). Without it, copying these files into `.opencode/agents/` (see [docs/opencode-setup.md](opencode-setup.md)) would also list each persona as a selectable primary agent, cluttering the agent picker. `mode: subagent` restricts them to the fan-out/dispatch role they're designed for — the same restriction `docs/agents.md` already enforces for Claude Code ("personas do not invoke other personas"). Claude Code ignores the unknown `mode` field, so this stays a single shared file across both harnesses.
+
 ## Adding a new persona
 
-1. Create `agents/<role>.md` with the same frontmatter format used by existing personas.
+1. Create `agents/<role>.md` with the same frontmatter format used by existing personas (including `mode: subagent`).
 2. Define the role, scope, output format, and rules.
 3. Add a **Composition** block at the bottom (Invoke directly when / Invoke via / Do not invoke from another persona).
 4. Add the persona to the table at the top of this file.
