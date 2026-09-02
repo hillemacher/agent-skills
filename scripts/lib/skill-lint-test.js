@@ -109,6 +109,31 @@ test('reports frontmatter name that disagrees with the directory', () => {
   assert.match(errors[0], /does not match directory name/);
 });
 
+test('reports a workflow step declared without a matching process section', () => {
+  const content = withAllSections(VALID_FRONTMATTER).replace(
+    '## Common Rationalizations',
+    [
+      '## The Optimization Workflow',
+      '',
+      '```',
+      '1. MEASURE → Establish a baseline',
+      '2. GUARD   → Prevent regression',
+      '```',
+      '',
+      '### Step 1: Measure',
+      '',
+      'Measure first.',
+      '',
+      '## Common Rationalizations',
+    ].join('\n'),
+  );
+
+  const { errors } = lintSkillContent('alpha', content, KNOWN);
+
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /Workflow declares Step 2 but has no matching process section/);
+});
+
 test('reports a missing frontmatter block', () => {
   const { errors } = lintSkillContent('alpha', '## Overview\nx\n', KNOWN);
   assert.equal(errors.length, 1);

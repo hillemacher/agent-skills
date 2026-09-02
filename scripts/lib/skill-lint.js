@@ -209,6 +209,27 @@ function lintSkillContent(dirName, content, knownSkills) {
     }
   }
 
+  // A named workflow that advertises numbered steps must document each step
+  // before the next level-two section. Otherwise the summary promises a
+  // process stage that the skill never teaches agents how to perform.
+  const workflowSections = content.matchAll(
+    /^## The [^\n]+ Workflow\s*\r?\n([\s\S]*?)(?=^## |(?![\s\S]))/gm
+  );
+  for (const match of workflowSections) {
+    const section = match[1];
+    const declared = [...section.matchAll(/^\s*(\d+)\.\s+[A-Z][A-Z -]*\s+→/gm)];
+    if (declared.length < 2) continue;
+
+    const documented = new Set(
+      [...section.matchAll(/^### Step\s+(\d+):/gm)].map(step => step[1])
+    );
+    for (const step of declared) {
+      if (!documented.has(step[1])) {
+        errors.push(`Workflow declares Step ${step[1]} but has no matching process section`);
+      }
+    }
+  }
+
   // ── Cross-skill references ───────────────────────────────────────────────
   const refs = extractSkillReferences(content);
   for (const ref of refs) {
