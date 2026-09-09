@@ -5,6 +5,7 @@ description: Start spec-driven development — write a structured specification 
 Invoke the spec-driven-development skill.
 
 Begin by understanding what the user wants to build. Ask clarifying questions about:
+
 1. The objective and target users
 2. Core features and acceptance criteria
 3. Tech stack preferences and constraints
@@ -14,4 +15,4 @@ Then generate a structured spec covering all six core areas: objective, commands
 
 If the request bundles several independently testable capabilities, first propose a capability map (module ids, dependency direction, build order) per the skill's Phase 0 and get it approved, then spec each module in dependency order.
 
-Save the spec as `.opencode/spec/SPEC.md` and confirm with the user before proceeding.
+Save the spec as `.opencode/spec/SPEC.md` and confirm with the user before proceeding. If you are in Plan mode report back to the user and suggest to switch into the build mode to write the file.

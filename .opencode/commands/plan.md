@@ -14,6 +14,6 @@ Read the existing spec (`.opencode/spec/SPEC.md` or equivalent) and the relevant
 5. Add checkpoints between phases
 6. Present the plan for human review
 
-Save the plan to `.opencode/tasks/plan.md` and task list to `.opencode/tasks/todo.md`.
+Save the plan to `.opencode/tasks/plan.md` and task list to `.opencode/tasks/todo.md`. If you are in Plan mode report back to the user and suggest to switch into the build mode to write the files.
 
 If `.opencode/tasks/plan.md` or `.opencode/tasks/todo.md` already exists with unchecked tasks for different work, stop and ask before writing — never silently overwrite an incomplete plan.
