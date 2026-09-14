@@ -439,12 +439,13 @@ function parseGrading(raw, expectedCount) {
   const expectations = g.expectations;
   const summary = g.summary;
   const passed = Array.isArray(expectations)
-    ? expectations.filter((expectation) => expectation.passed === true).length
+    ? expectations.filter((expectation) => expectation?.passed === true).length
     : 0;
   const ok =
     Number.isInteger(expectedCount) && expectedCount > 0 &&
     Array.isArray(expectations) && expectations.length === expectedCount &&
     expectations.every((expectation) =>
+      expectation !== null &&
       typeof expectation.text === 'string' &&
       typeof expectation.passed === 'boolean' &&
       typeof expectation.evidence === 'string') &&

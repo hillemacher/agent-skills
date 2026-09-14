@@ -90,6 +90,25 @@ test('rejects grader results that omit expectations', () => {
   assert.equal(parseGrading(raw, 2), null);
 });
 
+test('rejects null expectation entries without throwing', () => {
+  for (const expectations of [
+    [null],
+    [{ text: 'first expectation', passed: true, evidence: 'observed' }, null],
+  ]) {
+    const raw = JSON.stringify({
+      expectations,
+      summary: {
+        passed: expectations.length - 1,
+        failed: 1,
+        total: expectations.length,
+        pass_rate: (expectations.length - 1) / expectations.length,
+      },
+    });
+
+    assert.equal(parseGrading(raw, expectations.length), null);
+  }
+});
+
 test('rejects incomplete or inconsistent grader summaries', () => {
   const expectation = { text: 'expected behavior', passed: false, evidence: 'not observed' };
   const cases = [
