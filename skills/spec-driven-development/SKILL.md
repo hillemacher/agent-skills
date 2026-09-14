@@ -213,7 +213,7 @@ The spec is a living document, not a one-time artifact:
 
 - **Update when decisions change** — If you discover the data model needs to change, update the spec first, then implement.
 - **Update when scope changes** — Features added or cut should be reflected in the spec.
-- **Commit the spec** — The spec belongs in version control alongside the code.
+- **Offer a version-control handoff when the skill work concludes** — Gather every specification artifact written or updated by this workflow: the spec document for single-capability work, or the approved capability map and all module specs for multi-module work. If inside a Git worktree, check each path with `git check-ignore -q -- <path>`. Exclude ignored paths. If any eligible paths remain, list them and ask the user whether to commit them; stage and commit only after an explicit affirmative. If every artifact is ignored, Git is unavailable, or the user declines, do not commit anything.
 - **Reference the spec in PRs** — Link back to the spec section that each PR implements.
 
 ## Common Rationalizations
