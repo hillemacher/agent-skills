@@ -37,6 +37,21 @@ Tier 3 supports two behavioral artifact kinds. `execution` is the default: each 
 
 The executor runs with an explicit permission mode (`--permission-mode acceptEdits` plus a pre-approved tool list) so execution evals can genuinely edit files, run commands, inspect diffs, and make commits rather than being denied and narrating instead. Traces are fenced as untrusted data in the grader prompt and piped to the grader over stdin (they can be megabytes; argv would hit the OS argument-size limit), executor and grader calls carry timeouts, and grader output is validated as JSON before being written to `evals/results/` (gitignored) in skill-creator's `grading.json` shape. Discipline skills also include pressure cases for time pressure, sunk cost, and authority pressure; these verify that the workflow still holds when the prompt argues for skipping it.
 
+## Plugin evals (Claude Code)
+
+`claude plugin eval` (Claude Code 2.1.269 or later) loads the whole plugin, every skill at once, runs the cases under `evals/plugin/`, and scores each case with and without the plugin. It complements Tier 2 rather than replacing it: Tier 2 checks that a description carries the vocabulary users say; this checks that Claude Code's own router picks the skill on a natural prompt, and what the skill adds to the reply (the `Δ` column).
+
+```bash
+claude plugin eval . --no-publish                                          # every case, both arms, 3 runs each
+claude plugin eval . --case code-review-fires --runs 1 --ablation none     # one cheap iteration on one case
+```
+
+A case is a directory holding `prompt.md` (frontmatter: turn and tool limits; body: the prompt, sent verbatim) and one grader per file under `graders/`. Reports land in `evals/results/<timestamp>/`, already gitignored. Every run and every `llm` grader is a real model call on your account, so this runs on demand and never in CI, like Tier 3.
+
+Two rules keep it honest. The command scans all of `evals/` for `prompt.md` or `case.yaml`, so never give a fixture file either name. And a `tool_used: Skill` grader only says whether the skill fired; in a two-arm run it is excluded from the score, so pair it with a grader on the reply itself. `code-review-fires` shows the pattern: the fired indicator, a free `regex` grader that looks for the skill's severity taxonomy (Critical, Required, Nit, Optional, Consider, FYI) used as a heading or as a label, and one `llm` judge on the planted off-by-one. `code-review-stays-quiet` is the precision check: the review skill must not fire on a test-first request, and its `Δ` is expected to be 0; a second, unscored indicator records whether test-driven-development fires instead.
+
+What the first runs taught (Claude Code 2.1.278, claude-opus-5). Skill invocation is stochastic: the review skill fired in 5 of 7 runs on the phrasing the case uses, and test-driven-development fired in 2 of 7 runs on the test-first prompt, so read `Δ` and the report rather than the exit code, or pass `--threshold 0.8` as the CI example in the docs does. In one run the review skill did not fire and the reply still used its severity taxonomy as headings, which no baseline run did in nine; the loaded skill descriptions may shape the reply even without an invocation. Phrasing matters: "Review this diff before I merge it", "Can you do a proper code review of this change before I merge it?" and "Review this pull request for me before it goes into main" never fired the skill in six runs; the model reviewed the diff on its own, competently but without the verdict, the severity tiers or the five-axis pass. Naming the axes ("across correctness, readability, security and performance") is what fires it, so the case uses that; the plainer phrasings are the open finding, and the fix, if any, belongs in the skill's description, not in the prompt. The model may also reach a skill through its slash command (`agent-skills:review`, then `code-review-and-quality`), which costs two turns, so give a case a turn budget of 10 or more.
+
 ## Eval case format
 
 One file per skill: `evals/cases/<skill-name>.json`.
