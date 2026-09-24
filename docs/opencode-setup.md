@@ -9,6 +9,8 @@ OpenCode does not have a native plugin system, but it supports both automatic sk
 - A strong system prompt (`AGENTS.md`)
 - The built-in `skill` tool
 - Consistent skill discovery via the `.opencode/skills` symlink to the `skills/` directory
+- A checked-in `.opencode/agents/` mirror for specialist personas
+- A checked-in `.opencode/references/` mirror for shared skill checklists
 - Optional slash commands in `.opencode/commands/` for users who prefer explicit, manual invocation over relying on intent detection
 
 This creates an **agent-driven workflow** by default, where skills are selected and executed automatically, while still giving you `/spec`, `/plan`, and the rest of the lifecycle commands when you want to trigger a workflow explicitly.
@@ -56,7 +58,7 @@ mkdir -p .opencode/skills
 cp -r .claude/skills/<skill-name> .opencode/skills/
 ```
 
-> **Note:** Per-skill installs copy only the skill directory itself. If a skill references shared files under `references/`, copy those into the installed skill directory or install the whole pack. See [#361](https://github.com/addyosmani/agent-skills/issues/361) for background.
+> **Note:** Per-skill installs copy only the skill directory itself. For OpenCode, also copy this repository's `.opencode/references/` directory into the target project's `.opencode/references/` when a selected skill uses shared `../../references/...` paths; alternatively install the whole pack. See [#361](https://github.com/addyosmani/agent-skills/issues/361) for background.
 
 ### Option 2: Clone this repository
 
@@ -72,6 +74,8 @@ If you're opening this repository itself in OpenCode (for example, to contribute
 - `skills/` directory
 - `.opencode/skills` — a symlink to `../skills/`, already committed in this repo. OpenCode's `skill` tool only auto-discovers `SKILL.md` files under `.opencode/skills/`, `.claude/skills/`, or `.agents/skills/` (or their global equivalents) — a bare root `skills/` directory is not itself a discovery path
 - `.opencode/commands/` directory (optional slash commands — see [Slash Commands](#slash-commands) below)
+- `.opencode/agents/` directory — a verified mirror of root `agents/`, auto-discovered as subagents
+- `.opencode/references/` directory — a verified mirror of root `references/`
 - `.opencode/opencode.json` — grants the `plan` agent a narrow write exception; see [Slash Commands](#slash-commands) below
 
 If instead you're installing these skills into a **different** project, copy the desired skills into one of the OpenCode skill discovery paths:
@@ -90,6 +94,18 @@ mkdir -p .opencode/skills
 cp -r /path/to/agent-skills/skills/spec-driven-development .opencode/skills/
 cp -r /path/to/agent-skills/skills/incremental-implementation .opencode/skills/
 ```
+
+#### Install the full OpenCode pack
+
+For the full set of skills, personas, commands, and references, run the checked-in installer from a clone of this repository:
+
+```bash
+node /path/to/agent-skills/scripts/install-opencode-assets.js /path/to/your-project
+```
+
+The target must be an existing Git worktree. The installer merges only its managed files, records their hashes in `.opencode/agent-skills-manifest.json`, and aborts before writing if a target file was customized. Re-run it to safely update unchanged installed files; use `--dry-run` to inspect changes or `--force` only when you explicitly want to replace a conflicting regular file. It never edits `AGENTS.md` or `.opencode/opencode.json`.
+
+The pack includes verified mirrors of root `agents/` and `references/` in `.opencode/agents/` and `.opencode/references/`. From an installed agent, `../references/...` resolves to the shared checklists; skill links using `../../references/...` remain valid too.
 
 #### Global installation
 
@@ -217,7 +233,7 @@ Correct behavior: always check for and use skills first.
 
 Trim the Intent → Skill Mapping list down to only the skills you actually copied — listing one that isn't present just gives the model a dead end to invoke.
 
-If you also copied personas into `.opencode/agents/` and commands into `.opencode/commands/`, append this section too:
+If you install personas into `.opencode/agents/` (the full pack does this) and commands into `.opencode/commands/`, append this section too:
 
 ```markdown
 ## Orchestration: Personas, Skills, and Commands
@@ -279,7 +295,7 @@ The repo ships 8 slash commands under `.opencode/commands/`: 7 lifecycle command
 
 Each command invokes the corresponding skill automatically — no manual skill loading required.
 
-> **Note:** `/ship` and `/webperf` fan out to specialist personas (`code-reviewer`, `security-auditor`, `test-engineer`, `web-performance-auditor`). OpenCode auto-discovers subagents from project-local `.opencode/agents/` first, then the global `~/.config/opencode/agents/` — not this repo's root `agents/` folder. Either location is enough to enable automatic parallel dispatch; you only need to copy the persona files you want to use into `.opencode/agents/` or `~/.config/opencode/agents/` if you don't already have equivalents in either. If the same persona name exists in both, the project-local copy wins. Both commands fall back to running the personas sequentially in the main context only when a persona is missing from both locations. Each persona file carries `mode: subagent` in its frontmatter, so OpenCode only offers them for dispatch (via commands or the Task tool) and doesn't also list them as selectable primary agents.
+> **Note:** `/ship` and `/webperf` fan out to specialist personas (`code-reviewer`, `security-auditor`, `test-engineer`, `web-performance-auditor`). This repository ships those personas in the verified `.opencode/agents/` mirror, which OpenCode discovers before global `~/.config/opencode/agents/`. In another project, install the full pack or copy the desired mirror files into `.opencode/agents/`; a global definition also works. If the same persona name exists in both locations, the project-local copy wins. Both commands fall back to running the personas sequentially in the main context only when a persona is missing from both locations. Each persona file carries `mode: subagent` in its frontmatter, so OpenCode only offers them for dispatch (via commands or the Task tool) and doesn't also list them as selectable primary agents.
 
 ### Where planning artifacts live
 
