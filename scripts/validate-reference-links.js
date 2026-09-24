@@ -2,7 +2,7 @@
 /**
  * validate-reference-links.js
  *
- * Guards links from skills to the shared `references/` checklists.
+ * Guards links from skills and root agents to the shared `references/` checklists.
  *
  * Those checklists live in the repo-root `references/` directory, but every
  * SKILL.md used to link them as `references/<file>.md` — a path relative to
@@ -48,6 +48,7 @@ const { stripFencedCodeBlocks } = require('./lib/skill-lint');
 
 const ROOT = path.resolve(__dirname, '..');
 const SKILLS_DIR = path.join(ROOT, 'skills');
+const AGENTS_DIR = path.join(ROOT, 'agents');
 
 // Matches a link to a references/ markdown file, with any number of leading
 // `../` segments: `references/x.md`, `../../references/x.md`. Anchored on a
@@ -85,23 +86,27 @@ function skillReferenceFiles(skillDir) {
     .filter((file) => fs.statSync(file).isFile());
 }
 
+function rootAgentFiles() {
+  if (!fs.existsSync(AGENTS_DIR) || !fs.statSync(AGENTS_DIR).isDirectory()) return [];
+  return fs.readdirSync(AGENTS_DIR)
+    .filter((name) => name.endsWith('.md'))
+    .sort()
+    .map((name) => path.join(AGENTS_DIR, name))
+    .filter((file) => fs.statSync(file).isFile());
+}
+
 function toPosix(file) {
   return path.relative(ROOT, file).split(path.sep).join('/');
 }
 
 function main() {
-  console.log('Checking references/ links in skills...\n');
-
-  if (!fs.existsSync(SKILLS_DIR)) {
-    console.log('No skills/ directory — nothing to check.');
-    return;
-  }
+  console.log('Checking references/ links in skills and agents...\n');
 
   let checked = 0;
   let errors = 0;
   let referenceFileErrors = 0;
 
-  const skillNames = fs.readdirSync(SKILLS_DIR).sort();
+  const skillNames = fs.existsSync(SKILLS_DIR) ? fs.readdirSync(SKILLS_DIR).sort() : [];
   for (const name of skillNames) {
     const skillDir = path.join(SKILLS_DIR, name);
     const skillFile = path.join(skillDir, 'SKILL.md');
@@ -125,8 +130,26 @@ function main() {
     }
   }
 
+  let agentChecked = 0;
+  let agentErrors = 0;
+  for (const file of rootAgentFiles()) {
+    agentChecked++;
+    const violations = findViolations(file);
+    if (violations.length === 0) {
+      console.log(`  ✓  ${toPosix(file)}`);
+      continue;
+    }
+    console.log(`  ✗  ${toPosix(file)}`);
+    for (const { line, link, target } of violations) {
+      console.log(`       L${line}: ${link} — resolves to ${toPosix(target)}, which does not exist`);
+      errors++;
+      agentErrors++;
+    }
+  }
+
   const status = errors > 0 ? 'FAILED' : 'PASSED';
   console.log(`\n${checked} skills checked — ${errors} error(s) — ${status}`);
+  if (agentChecked > 0) console.log(`${agentChecked} agents checked — ${agentErrors} agent link error(s)`);
 
   if (errors > 0) {
     console.log('\nLinks to references/ are resolved from the directory of the file that contains them.');
@@ -135,6 +158,10 @@ function main() {
     if (referenceFileErrors > 0) {
       console.log('From a file inside skills/<name>/references/ they are three levels up:');
       console.log('use `../../../references/<file>.md`.');
+    }
+    if (agentErrors > 0) {
+      console.log('From agents/<name>.md shared checklists are one level up:');
+      console.log('use `../references/<file>.md`, not `references/<file>.md`.');
     }
     process.exit(1);
   }

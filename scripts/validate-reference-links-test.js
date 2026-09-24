@@ -57,6 +57,29 @@ test('passes when a skill reaches the shared checklist two levels up', () => {
   assert.match(result.stdout, /1 skills checked — 0 error\(s\) — PASSED/);
 });
 
+test('passes when a root agent reaches a shared checklist one level up', () => {
+  const root = makeSandbox();
+  writeFile(root, 'references/performance-checklist.md', '# Performance\n');
+  writeFile(root, 'agents/auditor.md', 'See `../references/performance-checklist.md`.\n');
+
+  const result = run(root);
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stdout, /1 agents checked/);
+});
+
+test('fails when a root agent uses a root-relative shared-reference path', () => {
+  const root = makeSandbox();
+  writeFile(root, 'references/performance-checklist.md', '# Performance\n');
+  writeFile(root, 'agents/auditor.md', 'See `references/performance-checklist.md`.\n');
+
+  const result = run(root);
+
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stdout, /agents\/auditor\.md/);
+  assert.match(result.stdout, /use `\.\.\/references\/<file>\.md`/);
+});
+
 test('fails when a skill links the shared checklist as if it were colocated', () => {
   // The regression: references/ lives at the repo root, but the link is
   // resolved from skills/<name>/, so it points two levels too deep.

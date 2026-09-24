@@ -43,6 +43,12 @@ jobs:
       - name: Test reference-link validator
         run: node --test scripts/validate-reference-links-test.js
 
+      - name: Validate OpenCode adapter mirrors
+        run: node scripts/validate-opencode-mirrors.js
+
+      - name: Test OpenCode adapter mirror validator
+        run: node --test scripts/validate-opencode-mirrors-test.js
+
       - name: Test session-start hook payload
         run: bash hooks/session-start-test.sh
 
@@ -69,6 +75,9 @@ jobs:
       - name: Test artifact-path validator
         run: node --test scripts/validate-artifact-paths-test.js
 
+      - name: Test OpenCode asset installer
+        run: node --test scripts/install-opencode-assets-test.js
+
   # Ubuntu coverage stays in the existing jobs above, preserving their check names.
   validate-platforms:
     name: Validate tooling (${{ matrix.os }})
@@ -94,8 +103,10 @@ jobs:
           scripts/validate-versions-test.js
           scripts/run-evals-test.js
           scripts/validate-reference-links-test.js
+          scripts/validate-opencode-mirrors-test.js
           scripts/validate-commands-test.js
           scripts/validate-artifact-paths-test.js
+          scripts/install-opencode-assets-test.js
 
       - name: Validate all skills
         run: node scripts/validate-skills.js
@@ -105,6 +116,9 @@ jobs:
 
       - name: Validate references/ links in skills
         run: node scripts/validate-reference-links.js
+
+      - name: Validate OpenCode adapter mirrors
+        run: node scripts/validate-opencode-mirrors.js
 
       - name: Validate commands across all tool directories
         run: node scripts/validate-commands.js
