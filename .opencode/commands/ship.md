@@ -8,7 +8,7 @@ Invoke the shipping-and-launch skill.
 
 ## Phase A — Parallel fan-out
 
-OpenCode discovers subagents from project-local `.opencode/agents/` first, then falls back to the global `~/.config/opencode/agents/`, and invokes them automatically based on their `description`, or manually via `@mention`/Task. Either location is enough to enable automatic parallel dispatch — you don't need a project-local copy if the personas already exist globally. This repo's shared personas live at the root `agents/` folder instead, which OpenCode does **not** auto-discover from directly; copy `agents/code-reviewer.md`, `agents/security-auditor.md`, and `agents/test-engineer.md` into `.opencode/agents/` or `~/.config/opencode/agents/` only if you don't already have equivalents in either location.
+OpenCode discovers subagents from project-local `.opencode/agents/` first, then falls back to the global `~/.config/opencode/agents/`, and invokes them automatically based on their `description`, or manually via `@mention`/Task. This repository ships its shared personas in the checked-in `.opencode/agents/` mirror, so they are immediately discoverable; either location is enough when installing elsewhere.
 
 If each persona is discoverable in `.opencode/agents/` and/or `~/.config/opencode/agents/`, dispatch all three in a single turn via `@mention`/Task so they run in parallel — sequential calls defeat the purpose of this command:
 
@@ -16,14 +16,14 @@ If each persona is discoverable in `.opencode/agents/` and/or `~/.config/opencod
 2. **`@security-auditor`** — Run a vulnerability and threat-model pass. Check OWASP Top 10, secrets handling, auth/authz, dependency CVEs. Output the standard audit report.
 3. **`@test-engineer`** — Analyze test coverage for the change. Identify gaps in happy path, edge cases, error paths, and concurrency scenarios. Output the standard coverage analysis.
 
-Only fall back to running the three passes sequentially in the main context (treating their outputs as if returned in parallel — the merge phase still works) if a persona is missing from **both** `.opencode/agents/` and `~/.config/opencode/agents/`; in that case, adopt its instructions from this repo's `agents/` folder directly.
+Only fall back to running the three passes sequentially in the main context (treating their outputs as if returned in parallel — the merge phase still works) if a persona is missing from **both** `.opencode/agents/` and `~/.config/opencode/agents/`; in that case, adopt its instructions from this repo's `.opencode/agents/` mirror directly.
 
 Constraints (from OpenCode's subagent model):
 - Subagents cannot spawn other subagents — do not let one persona delegate to another.
 - Each subagent gets its own context and returns only its report to this main session.
-- For richer multi-agent collaboration where teammates talk to each other instead of just reporting back, see `references/orchestration-patterns.md`.
+- For richer multi-agent collaboration where teammates talk to each other instead of just reporting back, see `../references/orchestration-patterns.md`.
 
-**Persona resolution.** If you've defined your own `code-reviewer`, `security-auditor`, or `test-engineer` in `.opencode/agents/` or `~/.config/opencode/agents/`, those take precedence over the copies from this repo's `agents/` folder — `/ship` picks up your customizations automatically. If the same persona name is defined in both locations, the project-local `.opencode/agents/` copy wins over the global one.
+**Persona resolution.** If you've defined your own `code-reviewer`, `security-auditor`, or `test-engineer` in `.opencode/agents/` or `~/.config/opencode/agents/`, those take precedence over this repo's mirror — `/ship` picks up your customizations automatically. If the same persona name is defined in both locations, the project-local `.opencode/agents/` copy wins over the global one.
 
 ## Phase B — Merge in main context
 

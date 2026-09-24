@@ -18,7 +18,7 @@ description: Run a web performance audit via the web-performance-auditor persona
 
 ## Run the audit
 
-OpenCode discovers subagents from `.opencode/agents/` (or the global `~/.config/opencode/agents/`). Copy `agents/web-performance-auditor.md` from this repo's root into `.opencode/agents/` once to enable `@web-performance-auditor` dispatch; without it, adopt that persona's instructions directly in the main context instead.
+OpenCode discovers subagents from `.opencode/agents/` (or the global `~/.config/opencode/agents/`). This repository includes `web-performance-auditor.md` in its checked-in mirror, so `@web-performance-auditor` dispatch is ready; without that installed mirror, adopt the persona's instructions directly in the main context instead.
 
 Run the audit — via `@web-performance-auditor` if the subagent file is present, otherwise in the main context — passing it explicitly:
 
