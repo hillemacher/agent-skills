@@ -49,6 +49,9 @@ jobs:
       - name: Test OpenCode adapter mirror validator
         run: node --test scripts/validate-opencode-mirrors-test.js
 
+      - name: Test floor-guard reference
+        run: node --test scripts/floor-guard-reference-test.js
+
       - name: Test session-start hook payload
         run: bash hooks/session-start-test.sh
 

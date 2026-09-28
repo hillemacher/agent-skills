@@ -7,5 +7,6 @@ node_modules/
 .claude/sdd-cache/
 .claude/skills/
 evals/results/
+evals/plugin/results/
 __pycache__/
 .agents/skills
