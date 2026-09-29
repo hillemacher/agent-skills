@@ -1,5 +1,8 @@
 # Getting Started with agent-skills
 
+This fork defaults to the adapted OpenCode pack. Start with [OpenCode setup](opencode-setup.md); the general workflows and other host integrations below remain available for compatibility.
+
+
 agent-skills works with any AI coding agent that accepts Markdown instructions. This guide covers the universal approach. For tool-specific setup, see the dedicated guides.
 
 Want a worked example before setting up your own project? The

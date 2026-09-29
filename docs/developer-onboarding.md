@@ -14,7 +14,7 @@ The repo has five composable layers. Understanding what each one is *for* preven
 |---|---|---|---|
 | **Skills** | `skills/<name>/SKILL.md` | Step-by-step workflows with verification gates | *How* |
 | **Personas** | `agents/<role>.md` | Roles with a perspective and output format | *Who* |
-| **Commands** | `.claude/commands/`, `.gemini/commands/`, `commands/` | User-facing entry points; the orchestration layer | *When* |
+| **Commands** | `.opencode/commands/` plus compatibility command adapters | User-facing entry points; the orchestration layer | *When* |
 | **References** | `references/*.md` | Checklists skills pull in on demand | *What to check* |
 | **Evals** | `evals/cases/<name>.json` | Proof that skills trigger and behave correctly | *Does it work* |
 
@@ -25,26 +25,26 @@ Two structural rules worth internalizing early:
 
 One scope caveat that trips people up: `AGENTS.md` and `CLAUDE.md` at the repo root configure agents working on *this repo*. They are not reusable assets and setup guides must never tell users to copy them into their own projects; the reusable assets are the skills.
 
-Note that commands exist in three parallel directories (Claude Code, Gemini CLI, Antigravity). Touch one and CI checks parity across all of them, see §3.
+Note that commands exist in four parallel directories (OpenCode, Claude Code, Gemini CLI, Antigravity). Touch one and CI checks parity across all of them, see §3.
 
 ## 2. Local setup
 
 ```bash
-git clone https://github.com/addyosmani/agent-skills.git
+git clone https://github.com/hillemacher/agent-skills.git
 cd agent-skills
 ```
 
 There's no build step and no `package.json`; validators are plain Node scripts. You need:
 
-- **Node 20+** (what CI runs) for the `scripts/` validators
+- **Node 20+** (CI uses Node 24) for the `scripts/` validators
 - **bash** (+ `jq` recommended) for the hook regression test
 - **`gh` CLI** for the duplicate-PR check before proposing a skill
-- **Claude Code** only if you want to run Tier 3 behavioral evals locally
+- **Claude Code** only for compatibility plugin checks or Tier 3 behavioral evals; these do not exercise OpenCode
 
 To try the pack live against a local checkout:
 
 ```bash
-claude --plugin-dir /path/to/agent-skills
+opencode # run from this checkout; adapted assets are discovered under .opencode/
 ```
 
 ## 3. The verification loop
@@ -52,10 +52,14 @@ claude --plugin-dir /path/to/agent-skills
 The repo eats its own cooking: verification is non-negotiable for skills, and it's non-negotiable for contributions to the repo too. Everything CI runs, you can run locally in seconds:
 
 ```bash
-# Tier 1, structural: frontmatter, naming, required sections
+# Tier 1, structural: root and adapted skill trees
 node scripts/validate-skills.js
+node scripts/validate-skills.js .opencode/skills
+node scripts/validate-opencode-mirrors.js
+node scripts/validate-reference-links.js
+node scripts/validate-artifact-paths.js
 
-# Command parity and description sync across the three command directories
+# Command parity and description sync across the four command directories
 node scripts/validate-commands.js
 
 # Tier 2, trigger & routing: positive prompts rank top-k, negatives don't collide
@@ -75,6 +79,12 @@ Run the relevant subset before every PR. A PR that arrives green through Tier 1 
 
 ## 4. Contribution paths
 
+### OpenCode adaptations and upstream updates
+
+Make OpenCode-specific edits in `.opencode/skills/`, `.opencode/agents/`, and `.opencode/references/`. Preserve upstream-facing root files. Declare each intentional difference in `.opencode/adapter-overrides.json`; undeclared or stale differences fail validation. Copy complete supporting resources when porting new skills. See [OpenCode setup](opencode-setup.md) for the declaration format.
+
+Use the tracked `.agents/skills/upstream-sync/SKILL.md` to review upstream deltas before an approved merge. Never bulk-copy over adapted content. The maintenance skill is not shipped in the consumer pack.
+
 ### Path 1: Fixing or improving an existing skill (most common, best first PR)
 
 1. Keep changes focused and minimal; preserve the skill's structure and tone.
@@ -85,7 +95,7 @@ Run the relevant subset before every PR. A PR that arrives green through Tier 1 
 
 The catalog already covers most of the lifecycle, so the burden of proof is on the gap. Before writing anything, run the pre-flight checks in [CONTRIBUTING.md](../CONTRIBUTING.md#before-proposing-a-new-skill): search the catalog, check open PRs (`gh pr list --state open`; near-duplicate clusters already exist), confirm the idea fits [skill-anatomy.md](skill-anatomy.md), and justify the gap explicitly in your PR description. If it overlaps an existing skill, a focused edit to that skill beats a new directory.
 
-A new skill ships as a set, not a single file: the `skills/<kebab-case-name>/SKILL.md`, a matching `evals/cases/<name>.json`, and a `scripts/` directory only when it ships runnable helpers (reference material goes in `references/`, never inside the skill). The exact frontmatter rules, the section anatomy, and the eval-case minimums live in [CONTRIBUTING.md](../CONTRIBUTING.md#structure) and [skill-anatomy.md](skill-anatomy.md); take them from there rather than this tour, so the two can't drift.
+A new skill ships as a set, not a single file: the `skills/<kebab-case-name>/SKILL.md`, a matching `evals/cases/<name>.json`, and a `scripts/` directory only when it ships runnable helpers (shared checklists live in root `references/`; skill-specific references stay with their skill). The exact frontmatter rules, the section anatomy, and the eval-case minimums live in [CONTRIBUTING.md](../CONTRIBUTING.md#structure) and [skill-anatomy.md](skill-anatomy.md); take them from there rather than this tour, so the two can't drift.
 
 One point worth internalizing rather than looking up: when writing trigger prompts, paraphrase how users actually talk; copying the description into the prompts games the eval and tells you nothing.
 

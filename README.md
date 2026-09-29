@@ -1,6 +1,6 @@
 # Agent Skills
 
-**Production-grade engineering skills for AI coding agents.**
+**Engineering skills for OpenCode, maintained as a fork of [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills).**
 
 Skills encode the workflows, quality gates, and best practices that senior engineers use when building software. These ones are packaged so AI agents follow them consistently across every phase of development.
 
@@ -43,7 +43,18 @@ Skills also activate automatically based on what you're doing — designing an A
 
 ## Quick Start
 
-**Fastest path — any agent, one command.** The open [skills CLI](https://github.com/vercel-labs/skills) installs into 70+ agents (Claude Code, Cursor, Codex, Copilot, Cline, and more):
+**Recommended for OpenCode — install the adapted complete pack:**
+
+```bash
+git clone https://github.com/hillemacher/agent-skills.git
+cd agent-skills
+node scripts/install-opencode-assets.js /path/to/target-repo --dry-run
+node scripts/install-opencode-assets.js /path/to/target-repo
+```
+
+This installs adapted skills, all nine commands, personas, and shared references. OpenCode discovers skills natively; no consumer `AGENTS.md` is required. See [OpenCode setup](docs/opencode-setup.md).
+
+**Compatibility installations — upstream-facing skills.** The open [skills CLI](https://github.com/vercel-labs/skills) installs into 70+ agents (Claude Code, Cursor, Codex, Copilot, Cline, and more):
 
 ```bash
 npx skills add addyosmani/agent-skills            # install all 25 skills
@@ -65,10 +76,10 @@ npx skills add addyosmani/agent-skills --skill test-driven-development   # red-g
 > a `references/` directory inside the installed skill. This portability gap is
 > tracked in [#361](https://github.com/addyosmani/agent-skills/issues/361).
 
-Prefer a native integration? Pick your tool below.
+OpenCode is the primary integration. Other supported adapters are listed below for compatibility.
 
 <details>
-<summary><b>Claude Code (recommended)</b></summary>
+<summary><b>Claude Code (compatibility)</b></summary>
 
 **Marketplace install:**
 
@@ -153,7 +164,7 @@ Add skill contents to your Windsurf rules configuration. See [docs/windsurf-setu
 <details>
 <summary><b>OpenCode</b></summary>
 
-Uses agent-driven skill execution via AGENTS.md and the `skill` tool by default, plus 8 optional slash commands in `.opencode/commands/` for explicit invocation. The adapter includes `.opencode/agents/` and `.opencode/references/`, verified mirrors of the shared personas and checklists. A full-pack installer is available as `node scripts/install-opencode-assets.js /path/to/target-repo`; it safely merges the pack and records managed files for future updates.
+Uses native `skill` discovery with optional project rules, plus 9 optional slash commands in `.opencode/commands/` for explicit invocation. The adapter includes `.opencode/agents/` and `.opencode/references/`, reviewed adaptations of the shared personas and checklists. A full-pack installer is available as `node scripts/install-opencode-assets.js /path/to/target-repo`; it safely merges the pack and records managed files for future updates.
 
 See [docs/opencode-setup.md](docs/opencode-setup.md).
 
@@ -358,7 +369,7 @@ The portable core stays in shared directories. Host-specific paths are native di
 | Claude Code adapter | `.claude/commands/` (9 commands), `.claude-plugin/`, `hooks/` | Slash-command wrappers, marketplace metadata, and lifecycle hooks |
 | Gemini CLI adapter | `.gemini/commands/` (9 commands) | Gemini-native TOML command wrappers |
 | Antigravity CLI adapter | `commands/` (9 commands), `plugin.json` | Legacy TOML wrappers and the root plugin manifest; see the [known wrapper limitation](docs/antigravity-setup.md#lifecycle-workflows-and-command-compatibility) |
-| OpenCode adapter (fork extension) | `.opencode/skills`, `.opencode/agents/`, `.opencode/references/`, `.opencode/commands/` (9 commands), `.opencode/opencode.json` | Skill-discovery symlink, verified persona/reference mirrors, lifecycle wrappers, and the scoped plan-agent write exception |
+| OpenCode adapter (fork extension) | `.opencode/skills`, `.opencode/agents/`, `.opencode/references/`, `.opencode/commands/` (9 commands), `.opencode/opencode.json` | Checked-in adapted skills, declared persona/reference adaptations, lifecycle wrappers, and the scoped plan-agent write exception |
 | Codex adapter | `.codex-plugin/`, `.agents/plugins/` | Codex plugin metadata and marketplace registration; Codex consumes `skills/` directly |
 | GitHub Copilot CLI adapter | `plugin.json` | Root plugin metadata; Copilot CLI discovers `skills/` by convention and does not register the lifecycle wrappers |
 | Contributor tooling | `scripts/` (13 scripts), `evals/` (25 case files), `.github/workflows/` | Validation, routing evals, and CI |

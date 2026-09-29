@@ -1,13 +1,13 @@
 # Agent Personas
 
-Specialist personas that play a single role with a single perspective. Each persona is a Markdown file consumed as a system prompt by your harness (Claude Code, Cursor, Copilot, etc.).
+Specialist personas that play a single role with a single perspective. Each persona is a Markdown file consumed as a system prompt by your harness (OpenCode, with other harnesses supported through compatibility adapters).
 
 | Persona | Role | Best for |
 |---------|------|----------|
-| [code-reviewer](../agents/code-reviewer.md) | Senior Staff Engineer | Five-axis review before merge |
-| [security-auditor](../agents/security-auditor.md) | Security Engineer | Vulnerability detection, OWASP-style audit |
-| [test-engineer](../agents/test-engineer.md) | QA Engineer | Test strategy, coverage analysis, Prove-It pattern |
-| [web-performance-auditor](../agents/web-performance-auditor.md) | Web Performance Engineer | Core Web Vitals audit, loading/rendering/network analysis |
+| [code-reviewer](../.opencode/agents/code-reviewer.md) | Senior Staff Engineer | Five-axis review before merge |
+| [security-auditor](../.opencode/agents/security-auditor.md) | Security Engineer | Vulnerability detection, OWASP-style audit |
+| [test-engineer](../.opencode/agents/test-engineer.md) | QA Engineer | Test strategy, coverage analysis, Prove-It pattern |
+| [web-performance-auditor](../.opencode/agents/web-performance-auditor.md) | Web Performance Engineer | Core Web Vitals audit, loading/rendering/network analysis |
 
 ## How personas relate to skills and commands
 
@@ -34,8 +34,7 @@ Pick this when you want one perspective on the current change and the user is in
 ### Slash command (single persona behind it)
 Pick this when there's a repeatable workflow you'd otherwise re-explain every time.
 
-- `/review` → wraps `code-reviewer` with the project's review skill
-- `/test` → wraps `test-engineer` with TDD skill
+- `/review` and `/test` run review and TDD skills in the main session; they do not require a specialist persona.
 - `/webperf` → wraps `web-performance-auditor` for performance-focused audits on web apps
 
 ### Slash command (orchestrator — fan-out)
@@ -43,7 +42,7 @@ Pick this only when **independent** investigations can run in parallel and produ
 
 - `/ship` → fans out to `code-reviewer` + `security-auditor` + `test-engineer` in parallel, then synthesizes their reports into a go/no-go decision
 
-This is the only orchestration pattern this repo endorses. See [references/orchestration-patterns.md](../references/orchestration-patterns.md) for the full pattern catalog and anti-patterns.
+This is the only orchestration pattern this repo endorses. See [OpenCode orchestration patterns](../.opencode/references/orchestration-patterns.md) for the installed pattern catalog and composition policy.
 
 ## Decision matrix
 
@@ -94,29 +93,24 @@ Why this fails:
 - Pure routing layer with no domain value
 - Adds two paraphrasing hops → information loss + 2× token cost
 - The user already knows they want a review; let them call `/review` directly
-- Replicates work that slash commands and `AGENTS.md` intent-mapping already do
+- Replicates work that slash commands and native skill discovery already do
 
 ## Rules for personas
 
 1. A persona is a single role with a single output format. If you find yourself adding a second role, create a second persona.
-2. **Personas do not invoke other personas.** Composition is the job of slash commands or the user. On Claude Code this is also a hard platform constraint — *"subagents cannot spawn other subagents"* — so the rule is enforced for you.
+2. **Personas do not invoke other personas.** Composition is the job of slash commands or the user. This is pack policy, independent of a host's supported nesting depth.
 3. A persona may invoke skills (the *how*).
 4. Every persona file ends with a "Composition" block stating where it fits.
 
-## Claude Code interop
-
-The personas in this repo are designed to work as Claude Code subagents and as Agent Teams teammates without modification:
-
-- **As subagents:** auto-discovered when this plugin is enabled (no path config needed). Use the Agent tool with `subagent_type: code-reviewer` (or `security-auditor`, `test-engineer`). `/ship` is the canonical example.
-- **As Agent Teams teammates** (experimental, requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`): reference the same persona name when spawning a teammate. The persona's body is **appended to** the teammate's system prompt as additional instructions (not a replacement), so your persona text sits on top of the team-coordination instructions the lead installs (SendMessage, task-list tools, etc.).
-
-Subagents only report results back to the main agent. Agent Teams let teammates message each other directly. Use subagents when reports are enough; use Agent Teams when sub-agents need to challenge each other's findings (e.g. competing-hypothesis debugging). See [references/orchestration-patterns.md](../references/orchestration-patterns.md) for the full mapping.
-
-Plugin agents do not support `hooks`, `mcpServers`, or `permissionMode` frontmatter — those fields are silently ignored. Avoid relying on them when authoring new personas here.
-
 ## OpenCode interop
 
-Every persona ships `mode: subagent` in its frontmatter. OpenCode's `mode` option controls how an agent can be invoked (`primary`, `subagent`, or `all`; default `all`). Without it, copying these files into `.opencode/agents/` (see [docs/opencode-setup.md](opencode-setup.md)) would also list each persona as a selectable primary agent, cluttering the agent picker. `mode: subagent` restricts them to the fan-out/dispatch role they're designed for — the same restriction `docs/agents.md` already enforces for Claude Code ("personas do not invoke other personas"). Claude Code ignores the unknown `mode` field, so this stays a single shared file across both harnesses.
+OpenCode discovers the adapted personas in `.opencode/agents/`. They use `mode: subagent` to restrict them to dispatch rather than selectable primary agents. Users invoke them with `@mentions`; the main session uses the Task tool with the matching `subagent_type` and explicit review scope.
+
+The installed [orchestration reference](../.opencode/references/orchestration-patterns.md) describes concurrent dispatch, fallback behavior, and composition policy. Root personas remain upstream-facing compatibility sources. Adapted personas may differ only with a declaration in `.opencode/adapter-overrides.json`.
+
+## Claude Code compatibility
+
+Root personas and the root orchestration reference retain Claude plugin and Agent Teams support. See [Claude compatibility guidance](claude-code-compatibility.md). Do not apply those runtime mechanisms to OpenCode.
 
 ## Adding a new persona
 
@@ -124,4 +118,5 @@ Every persona ships `mode: subagent` in its frontmatter. OpenCode's `mode` optio
 2. Define the role, scope, output format, and rules.
 3. Add a **Composition** block at the bottom (Invoke directly when / Invoke via / Do not invoke from another persona).
 4. Add the persona to the table at the top of this file.
-5. If the persona enables a new orchestration pattern, document it in `references/orchestration-patterns.md` rather than inventing the pattern in the persona file itself.
+5. Port the persona into `.opencode/agents/`, adapting installed links and declaring any intentional differences.
+6. If the persona enables a new orchestration pattern, document it in `references/orchestration-patterns.md` rather than inventing the pattern in the persona file itself.

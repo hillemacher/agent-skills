@@ -2,20 +2,20 @@
 
 This file provides guidance to AI coding agents (Claude Code, Cursor, Copilot, Antigravity, etc.) when working with code in this repository.
 
-> **Scope:** This file configures agents working on the [`addyosmani/agent-skills`](https://github.com/addyosmani/agent-skills) repository itself. It is not meant to be copied into other projects or into a global agent configuration; the reusable assets are the skills in `skills/`, not this file.
+> **Scope:** This file configures agents working on the [`hillemacher/agent-skills`](https://github.com/hillemacher/agent-skills) repository itself. It is not meant to be copied into other projects or into a global agent configuration; the reusable assets are the skills in `skills/`, not this file.
 
 ## Repository Overview
 
-A collection of skills for Claude.ai and Claude Code for senior software engineers. Skills are packaged instructions and scripts that extend Claude and your coding agents capabilities.
+An OpenCode-focused fork of addyosmani/agent-skills. Root skills, personas, and references remain upstream-facing; reviewed OpenCode adaptations live in `.opencode/`.
 
 ## OpenCode Integration
 
-OpenCode uses a **skill-driven execution model** powered by the `skill` tool and this repository's `/skills` directory.
+OpenCode uses a **skill-driven execution model** powered by the `skill` tool and this repository's `.opencode/skills/` directory.
 
 ### Core Rules
 
 - If a task matches a skill, you MUST invoke it
-- Skills are located in `skills/<skill-name>/SKILL.md`, exposed to OpenCode's `skill` tool via the `.opencode/skills` symlink
+- OpenCode skills are checked-in copies in `.opencode/skills/<skill-name>/SKILL.md`. Preserve root compatibility assets and declare intentional adaptations in `.opencode/adapter-overrides.json`.
 - Never implement directly if a skill applies
 - Always follow the skill instructions exactly (do not partially apply them)
 
@@ -63,7 +63,7 @@ Correct behavior:
 
 - Always check for and use skills first
 
-This ensures OpenCode behaves similarly to Claude Code with full workflow enforcement.
+These are contributor workflow rules for this repository; consumer installations use native discovery and optional project rules.
 
 ## Orchestration: Personas, Skills, and Commands
 
@@ -77,9 +77,9 @@ Composition rule: **the user (or a slash command) is the orchestrator. Personas 
 
 The only multi-persona orchestration pattern this repo endorses is **parallel fan-out with a merge step** — used by `/ship` to run `code-reviewer`, `security-auditor`, and `test-engineer` concurrently and synthesize their reports. Do not build a "router" persona that decides which other persona to call; that's the job of slash commands and intent mapping.
 
-See [docs/agents.md](docs/agents.md) for the decision matrix and [references/orchestration-patterns.md](references/orchestration-patterns.md) for the full pattern catalog.
+See [docs/agents.md](docs/agents.md) for the decision matrix and [OpenCode orchestration patterns](.opencode/references/orchestration-patterns.md) for the full pattern catalog.
 
-**Claude Code interop:** the personas in `agents/` work as Claude Code subagents (auto-discovered from this plugin's `agents/` directory) and as Agent Teams teammates (referenced by name when spawning). Two platform constraints align with our rules: subagents cannot spawn other subagents, and teams cannot nest. Plugin agents silently ignore the `hooks`, `mcpServers`, and `permissionMode` frontmatter fields.
+**Compatibility only — Claude Code interop:** the personas in `agents/` work as Claude Code subagents (auto-discovered from this plugin's `agents/` directory) and as Agent Teams teammates (referenced by name when spawning). Two platform constraints align with our rules: subagents cannot spawn other subagents, and teams cannot nest. Plugin agents silently ignore the `hooks`, `mcpServers`, and `permissionMode` frontmatter fields.
 
 ## Creating a New Skill
 
@@ -88,3 +88,7 @@ See [docs/agents.md](docs/agents.md) for the decision matrix and [references/orc
 Skills in this repo are markdown-first: each lives at `skills/<kebab-case-name>/SKILL.md` with YAML frontmatter (`name`, `description`) and follows the section anatomy (Overview, When to Use, Process, Common Rationalizations, Red Flags, Verification). Add a `scripts/` directory only when the skill ships runnable helpers; most skills are markdown only, and there are no per-skill zip packages.
 
 For the full format, naming conventions, frontmatter rules, supporting-file thresholds, and writing principles, see [docs/skill-anatomy.md](docs/skill-anatomy.md), the single source of truth for skill structure. Do not restate that guidance here, link to it.
+
+## Upstream maintenance
+
+Use `.agents/skills/upstream-sync/SKILL.md` for upstream review and approved synchronization. Skills, personas, and references under `.opencode/` are adapted copies, not symlinks or unconditional byte-for-byte mirrors. Validate both skill trees, declared adaptations, artifact paths, and installed links. Never bulk-copy over adaptations, merge without explicit approval, or push without separate authorization.
