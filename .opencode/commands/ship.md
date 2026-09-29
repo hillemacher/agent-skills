@@ -8,28 +8,25 @@ Invoke the shipping-and-launch skill.
 
 ## Phase A — Parallel fan-out
 
-OpenCode discovers subagents from project-local `.opencode/agents/` first, then falls back to the global `~/.config/opencode/agents/`, and invokes them automatically based on their `description`, or manually via `@mention`/Task. This repository ships its shared personas in the checked-in `.opencode/agents/` mirror, so they are immediately discoverable; either location is enough when installing elsewhere.
+OpenCode discovers the shipped specialist definitions in `.opencode/agents/`, with global definitions under `~/.config/opencode/agents/` also supported. User `@mentions` invoke specialists interactively; an orchestrator uses the Task tool with the appropriate `subagent_type`.
 
-If each persona is discoverable in `.opencode/agents/` and/or `~/.config/opencode/agents/`, dispatch all three in a single turn via `@mention`/Task so they run in parallel — sequential calls defeat the purpose of this command:
+Dispatch independent Task calls concurrently, passing the same change scope to each:
 
-1. **`@code-reviewer`** — Run a five-axis review (correctness, readability, architecture, security, performance) on the staged changes or recent commits. Output the standard review template.
-2. **`@security-auditor`** — Run a vulnerability and threat-model pass. Check OWASP Top 10, secrets handling, auth/authz, dependency CVEs. Output the standard audit report.
-3. **`@test-engineer`** — Analyze test coverage for the change. Identify gaps in happy path, edge cases, error paths, and concurrency scenarios. Output the standard coverage analysis.
+1. **`code-reviewer`** — Five-axis review of the staged changes or selected commits; return the standard review report.
+2. **`security-auditor`** — Vulnerability and threat-model pass; return the standard audit report.
+3. **`test-engineer`** — Coverage analysis across happy paths, edge cases, error paths, and concurrency; return the standard coverage report.
 
-Only fall back to running the three passes sequentially in the main context (treating their outputs as if returned in parallel — the merge phase still works) if a persona is missing from **both** `.opencode/agents/` and `~/.config/opencode/agents/`; in that case, adopt its instructions from this repo's `.opencode/agents/` mirror directly.
+If a persona is missing or Task dispatch is unavailable or denied, state the limitation and run equivalent passes sequentially in the main context using the available persona instructions. Do not claim independent reviewer contexts for that fallback. If instructions or a required pass are unavailable, mark the review incomplete and return NO-GO.
 
-Constraints (from OpenCode's subagent model):
-- Subagents cannot spawn other subagents — do not let one persona delegate to another.
-- Each subagent gets its own context and returns only its report to this main session.
-- For richer multi-agent collaboration where teammates talk to each other instead of just reporting back, see `../references/orchestration-patterns.md`.
+Each reviewer returns its report to the main session. Personas must not delegate to other personas: this is pack policy, not an absolute OpenCode platform restriction. See [orchestration patterns](../references/orchestration-patterns.md).
 
-**Persona resolution.** If you've defined your own `code-reviewer`, `security-auditor`, or `test-engineer` in `.opencode/agents/` or `~/.config/opencode/agents/`, those take precedence over this repo's mirror — `/ship` picks up your customizations automatically. If the same persona name is defined in both locations, the project-local `.opencode/agents/` copy wins over the global one.
+Project-local persona definitions override global definitions of the same name. The installer protects customized local definitions rather than overwriting them silently.
 
 ## Phase B — Merge in main context
 
 Once all three reports are back, the main agent (not a sub-persona) synthesizes them:
 
-1. **Code Quality** — Aggregate Critical/Important findings from `code-reviewer` and any failing tests, lint, or build output. Resolve duplicates between reviewers.
+1. **Code Quality** — Aggregate Critical/Required findings from `code-reviewer` and any failing tests, lint, or build output. Resolve duplicates between reviewers.
 2. **Security** — Promote any Critical/High `security-auditor` findings to launch blockers. Cross-reference with `code-reviewer`'s security axis.
 3. **Performance** — Pull from `code-reviewer`'s performance axis; cross-check Core Web Vitals if applicable.
 4. **Accessibility** — Verify keyboard nav, screen reader support, contrast (not covered by the three personas — handle directly here, or invoke the accessibility checklist).
@@ -44,10 +41,10 @@ Produce a single output:
 ## Ship Decision: GO | NO-GO
 
 ### Blockers (must fix before ship)
-- [Source persona: Critical finding + file:line]
+- [Source persona: Critical, High, or Required finding + file:line]
 
 ### Recommended fixes (should fix before ship)
-- [Source persona: Important finding + file:line]
+- [Source persona: Optional or non-blocking finding + file:line]
 
 ### Acknowledged risks (shipping anyway)
 - [Risk + mitigation]
@@ -65,8 +62,8 @@ Produce a single output:
 
 ## Rules
 
-1. The three Phase A personas run in parallel — never sequentially.
+1. Run the three Phase A personas concurrently when dispatch is available; use the stated sequential fallback only when necessary and disclose it.
 2. Personas do not call each other. The main agent merges in Phase B.
 3. The rollback plan is mandatory before any GO decision.
-4. If any persona returns a Critical finding, the default verdict is NO-GO unless the user explicitly accepts the risk.
+4. Unresolved Critical, High security, or Required findings make the default verdict NO-GO unless the user explicitly accepts the specific risk.
 5. **Skip the fan-out only if all of the following are true:** the change touches 2 files or fewer, the diff is under 50 lines, and it does not touch auth, payments, data access, or config/env. Otherwise, default to fan-out. `/ship` is designed for production-bound changes — when the blast radius is non-trivial, run the parallel review even if the diff looks small.

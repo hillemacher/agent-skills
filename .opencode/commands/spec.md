@@ -15,4 +15,6 @@ Then generate a structured spec covering all six core areas: objective, commands
 
 If the request bundles several independently testable capabilities, first propose a capability map (module ids, dependency direction, build order) per the skill's Phase 0 and get it approved, then spec each module in dependency order.
 
-Save the spec as `.opencode/spec/SPEC.md` and confirm with the user before proceeding. If you are in Plan mode report back to the user and suggest to switch into the build mode to write the file.
+For a single capability, save the approved spec as `.opencode/spec/SPEC.md`. For multi-module work, save the approved capability-map index there and each module's approved spec as `.opencode/spec/SPEC-<module>.md`, with source paths and approval status in the index. The map is not a substitute for a selected module's requirements. Keep an explicitly designated external specification system's storage conventions instead of duplicating its artifacts.
+
+Confirm approval before proceeding. Save only if the current permissions allow the artifact. The repository configuration permits the default index and module-spec paths in Plan mode; if the host denies a path (including an external system's path), present the content and explain that Build mode or a narrow permission exception is needed to save it.

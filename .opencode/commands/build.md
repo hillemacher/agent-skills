@@ -11,9 +11,15 @@ Invoke the incremental-implementation skill alongside test-driven-development.
 
 `$ARGUMENTS` selects the mode. Treat `auto` (canonical) or `all` as autonomous mode; anything else (or empty) is the default single-task mode. Note: autonomous mode is not faster *per task* — it runs the same test-driven loop — it only removes the human stepping *between* tasks.
 
+## Specification and task handoff (both modes)
+
+Resolve the approved specification through the `spec-driven-development` handoff: an explicit user selection takes precedence, then the source recorded in the plan, then an approved single-capability `.opencode/spec/SPEC.md`. If the default file is a capability-map index, require an explicit module selection from the user or plan, resolve its approved specification path, and check its dependencies. An explicitly identified external specification (readable approved artifact id/link or path) is accepted without a duplicate default file. Never treat the capability map alone, an arbitrary document, or an unapproved module spec as implementation requirements.
+
+Read the plan's recorded specification source, selected module, and task list target. If the requested work disagrees with an existing incomplete plan, stop to resolve the mismatch rather than replacing it. If a source is absent, unreadable, or not approved, request the missing source or `/spec`; do not invent requirements. If the plan names an external tracker, read and update its task items; do not require or create `.opencode/tasks/todo.md`. If that tracker is unavailable or unauthorized, report the blocker rather than changing targets.
+
 ## Default: one task
 
-Pick the next pending task from the plan. Then:
+If no plan exists, request `/plan` or `/build auto` before implementing. Otherwise pick the next pending task from the plan's recorded task list target. Then:
 
 1. Read the task's acceptance criteria
 2. Load relevant context (existing code, patterns, types)
@@ -22,17 +28,17 @@ Pick the next pending task from the plan. Then:
 5. Run the full test suite to check for regressions
 6. Run the build to verify compilation
 7. Commit with a descriptive message
-8. Mark the task complete and stop
+8. Mark the task complete in the recorded task list target and stop
 
 ## Autonomous: the whole plan (`/build auto`)
 
 Use this once a spec exists and you want to collapse plan + build into one run. It removes the manual stepping between tasks — **not** the verification. Every task still earns a passing test and its own commit.
 
-1. **Require a spec.** Look only for a spec at a known path: `.opencode/spec/SPEC.md`. A README or arbitrary doc does **not** count. If none exists, stop and tell the user to run `/spec` first — do not invent requirements.
-2. **Establish a clean baseline.** Run `git status --porcelain`. If there are uncommitted changes outside the expected planning artifacts (`.opencode/spec/SPEC.md`, `.opencode/tasks/plan.md`, `.opencode/tasks/todo.md`), stop and ask the user to commit, stash, or confirm how to handle them. Autonomous per-task commits must not absorb unrelated local work, or the clean-rollback guarantee breaks.
-3. **Plan if needed.** If there is no `.opencode/tasks/plan.md`, invoke the planning-and-task-breakdown skill to generate one.
+1. **Require an approved spec.** Resolve the specification source and module using the handoff above. Accept the selected module specification or explicitly identified external approved specification; the default file is not mandatory when those sources are used.
+2. **Establish a clean baseline.** Run `git status --porcelain`. If there are uncommitted changes outside the explicitly identified planning artifacts (the selected spec or external spec files, the capability-map index if applicable, `.opencode/tasks/plan.md`, and the selected task list file when local), stop and ask the user to commit, stash, or confirm how to handle them. Autonomous per-task commits must not absorb unrelated local work, or the clean-rollback guarantee breaks.
+3. **Plan if needed.** If there is no `.opencode/tasks/plan.md`, invoke the planning-and-task-breakdown skill with the resolved specification source, selected module, and designated task list target. Record that handoff in the new plan.
 4. **Single checkpoint.** Present the full plan and wait for an unambiguous affirmative (e.g. "approve", "go", "yes"). Treat hedged responses ("looks reasonable", "I guess") as **not** approved. This is the only human gate — after approval, run autonomously. If you generated `.opencode/tasks/plan.md`, commit it as a single preparatory commit now so it doesn't bleed into the first task's commit.
-5. **Execute every task in dependency order.** Use each task's declared dependencies; if they aren't explicit, execute in the order the plan lists them. For each task, run the full default loop above (RED → GREEN → regression → build → commit → mark complete). Stage only the files that task touched plus its task-status update — never `git add -A` blindly — and make one commit per task so any point is a clean rollback.
+5. **Execute every task in dependency order.** Use each task's declared dependencies; if they aren't explicit, execute in the order the plan lists them. For each task, run the full default loop above (RED → GREEN → regression → build → commit → mark complete). Update completion in the recorded task list target. Stage only the files that task touched plus any local task-status update — never `git add -A` blindly — and make one commit per task so any point is a clean rollback.
 6. **Stop and ask the user** (do not push through) when:
    - a test can't be made to pass or the build breaks without an obvious fix → follow the debugging-and-error-recovery skill
    - the spec is ambiguous, or a task needs a decision the spec doesn't cover

@@ -18,9 +18,9 @@ description: Run a web performance audit via the web-performance-auditor persona
 
 ## Run the audit
 
-OpenCode discovers subagents from `.opencode/agents/` (or the global `~/.config/opencode/agents/`). This repository includes `web-performance-auditor.md` in its checked-in mirror, so `@web-performance-auditor` dispatch is ready; without that installed mirror, adopt the persona's instructions directly in the main context instead.
+OpenCode discovers subagents from `.opencode/agents/` (or the global `~/.config/opencode/agents/`). The main agent dispatches the installed persona through the Task tool with `subagent_type: "web-performance-auditor"`. Users may also invoke it directly with `@web-performance-auditor`. If Task dispatch is unavailable or denied, disclose the limitation and adopt available persona instructions in the main context; report an incomplete audit if those instructions are missing.
 
-Run the audit — via `@web-performance-auditor` if the subagent file is present, otherwise in the main context — passing it explicitly:
+Run the audit — via the Task tool when the persona and dispatch permissions are available, otherwise using the stated main-context fallback — passing it explicitly:
 
 - The files, components, or diff under review
 - Any artifact paths (Lighthouse JSON, PSI JSON, CrUX response, trace) or pasted JSON content

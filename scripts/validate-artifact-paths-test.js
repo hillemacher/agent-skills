@@ -177,3 +177,50 @@ test('guards the Copilot setup doc, whose prompt-file aliases name the artifacts
   assert.match(result.stdout, /docs\/copilot-setup\.md/);
   assert.match(result.stdout, /specs\/\[name\]\/spec\.md/);
 });
+
+test('rejects root artifact paths in adapted OpenCode skills and commands', () => {
+  const root = makeSandbox();
+  writeFile(root, '.opencode/skills/planning-and-task-breakdown/SKILL.md', 'Save tasks/plan.md and tasks/todo.md.\n');
+  writeFile(root, '.opencode/commands/spec.md', 'Save SPEC.md.\n');
+  assert.equal(run(root).status, 1);
+  writeFile(root, '.opencode/skills/planning-and-task-breakdown/SKILL.md', 'Save .opencode/tasks/plan.md and .opencode/tasks/todo.md.\n');
+  writeFile(root, '.opencode/commands/spec.md', 'Save .opencode/spec/SPEC.md.\n');
+  assert.equal(run(root).status, 0);
+});
+
+test('rejects root module specs in the OpenCode pipeline', () => {
+  const root = makeSandbox();
+  writeFile(root, '.opencode/skills/spec-driven-development/SKILL.md', 'Save SPEC-identity.md and SPEC-billing.md at the root.\n');
+  const result = run(root);
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /SPEC-identity\.md/);
+});
+
+test('accepts an OpenCode capability index and stable module spec paths', () => {
+  const root = makeSandbox();
+  writeFile(root, '.opencode/skills/spec-driven-development/SKILL.md', 'Index: .opencode/spec/SPEC.md. Modules: .opencode/spec/SPEC-identity.md, .opencode/spec/SPEC-billing.md, .opencode/spec/SPEC-<module>.md.\n');
+  assert.equal(run(root).status, 0);
+});
+
+test('rejects malformed or misplaced module specification paths', () => {
+  for (const spec of ['.opencode/tasks/SPEC-identity.md', '.opencode/spec/SPEC-Identity.md', '.opencode/spec/SPEC-identity--billing.md']) {
+    const root = makeSandbox();
+    writeFile(root, '.opencode/commands/spec.md', `Save ${spec}.\n`);
+    assert.equal(run(root).status, 1, spec);
+  }
+});
+
+test('checks the narrow Plan permission required for module specification writes', () => {
+  const root = makeSandbox();
+  const edit = {
+    '*': 'deny',
+    '.opencode/spec/SPEC.md': 'allow',
+    '.opencode/tasks/plan.md': 'allow',
+    '.opencode/tasks/todo.md': 'allow',
+  };
+  writeFile(root, '.opencode/opencode.json', JSON.stringify({ agent: { plan: { permission: { edit } } } }));
+  assert.equal(run(root).status, 1);
+  edit['.opencode/spec/SPEC-*.md'] = 'allow';
+  writeFile(root, '.opencode/opencode.json', JSON.stringify({ agent: { plan: { permission: { edit } } } }));
+  assert.equal(run(root).status, 0);
+});

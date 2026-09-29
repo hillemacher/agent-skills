@@ -46,12 +46,12 @@ Most requests describe one capability. If this one does, skip this phase and go 
 ```markdown
 # Capability Map: [Initiative Name]
 
-| Module id | Responsibility | Depends on |
-|---|---|---|
-| identity | Accounts, sessions, SSO | — |
-| billing | Plans, invoices, payments | identity |
-| notifications | Email and webhook fan-out | identity |
-| reporting | Usage dashboards | billing, notifications |
+| Module id | Responsibility | Depends on | Specification | Approval |
+|---|---|---|---|---|
+| identity | Accounts, sessions, SSO | — | .opencode/spec/SPEC-identity.md | pending |
+| billing | Plans, invoices, payments | identity | .opencode/spec/SPEC-billing.md | pending |
+| notifications | Email and webhook fan-out | identity | .opencode/spec/SPEC-notifications.md | pending |
+| reporting | Usage dashboards | billing, notifications | .opencode/spec/SPEC-reporting.md | pending |
 
 Build order: identity → billing, notifications → reporting
 ```
@@ -62,7 +62,7 @@ Build order: identity → billing, notifications → reporting
 
 **The map is gated like every phase.** The human reviews module boundaries, dependency direction, and build order before any module spec is written. Getting the map wrong is expensive; reviewing ten lines is not.
 
-**Then recurse per module.** Run Specify → Plan → Tasks → Implement for each module in dependency order. Each module gets its own spec, scoped to that module's objective, boundaries, and success criteria. Save the approved map at the project root and each module's spec alongside it, named by module id (`SPEC-identity.md`, `SPEC-billing.md`) — the map, not filename guessing, is the index of what exists.
+**Then recurse per module.** Run Specify → Plan → Tasks → Implement for each module in dependency order. Each module gets its own spec, scoped to that module's objective, boundaries, and success criteria. Save the approved capability map as the index at `.opencode/spec/SPEC.md`. Save each approved module specification alongside it as `.opencode/spec/SPEC-<module>.md`, using the stable kebab-case module id (for example `.opencode/spec/SPEC-identity.md`). The index records each module's specification path and approval status; a proposed path is not an approved specification. `/plan` and `/build` require an explicit selected module from the user or an existing plan, resolve its approved specification through this index, and do not treat the map alone as implementation requirements. Keep the shared plan scoped to one selected module; never overwrite another module's incomplete plan.
 
 ### Phase 1: Specify
 
@@ -147,11 +147,20 @@ Don't silently fill in ambiguous requirements. The spec's entire purpose is to s
 [Anything unresolved that needs human input]
 ```
 
+**Output convention:** For a single capability, save the approved specification to `.opencode/spec/SPEC.md`. For multi-module work, that path is the capability-map index and each selected module has its own specification as described in Phase 0. Save only artifacts permitted by the current host; if a module path is denied in Plan mode, present the content and explain that a narrow permission exception or Build mode is needed.
+
 **External spec tools:** This workflow is format-agnostic. If the project
 already uses OpenSpec or another specification system, keep that system's
 artifact format and storage conventions instead of creating a duplicate
-`SPEC.md`. This skill owns the clarification, content, and approval gates; the
+`.opencode/spec/SPEC.md`. This skill owns the clarification, content, and approval gates; the
 external tool owns how the approved spec is represented.
+
+**Specification handoff:** `/plan` and both `/build` modes use an approved specification explicitly identified by the user or recorded in an existing plan. This may be a local path or an external system's artifact id/link; verify that it is readable, approved, and covers the selected work before proceeding. An explicit selection takes precedence over the default path, but must agree with an existing incomplete plan. A README or arbitrary document does not become a specification merely because it exists.
+
+Without an explicit selection or recorded handoff, use `.opencode/spec/SPEC.md` if it is an approved single-capability specification. If it is a capability-map index, require an explicit module selection and resolve the module's approved spec from the index. If no approved specification can be resolved, stop and request the missing source or `/spec`; do not invent requirements or require an external system to create a duplicate default file.
+
+The plan records a **Specification source** (path or external id/link), **Module** (selected id, or single capability), and **Task list target** (default checklist path or designated external tracker). For multi-module work, also record the capability-map source. Check module dependencies before planning or building; if a dependency is unimplemented, surface it rather than changing the selected module silently.
+
 
 **Reframe instructions as success criteria.** When receiving vague requirements, translate them into concrete conditions:
 
@@ -179,7 +188,7 @@ With the validated spec, generate a technical implementation plan:
 
 > Follow `planning-and-task-breakdown` for the dependency-graph mapping and vertical-slicing mechanics behind these steps; it is the canonical source. The bullets above are a lightweight summary; if they ever diverge, `planning-and-task-breakdown` takes precedence.
 >
-> **Output convention:** Save the plan to `tasks/plan.md` and record the task list in the task list target defined by `planning-and-task-breakdown` (default `tasks/todo.md`; projects may designate an external tracker instead). Create `tasks/` if it does not exist. Downstream commands (`/build`, etc.) expect these defaults.
+> **Output convention:** Save the plan to `.opencode/tasks/plan.md` and record the task list in the task list target defined by `planning-and-task-breakdown` (default `.opencode/tasks/todo.md`; projects may designate an external tracker instead). Create `.opencode/tasks/` if it does not exist. Downstream commands (`/build`, etc.) expect these defaults.
 
 The plan should be reviewable: the human should be able to read it and say "yes, that's the right approach" or "no, change X."
 

@@ -11,9 +11,9 @@
  * `/build` still required SPEC.md and tasks/plan.md — the pipeline breaks, and
  * nothing else in CI catches it (command parity only compares descriptions).
  *
- * This validator enforces one canonical set of spec/plan/todo artifact paths
+ * This validator enforces approved host-specific spec/plan/todo artifact paths
  * across every file in the pipeline. Changing the convention means updating
- * ARTIFACT_ALLOWLIST *and* every guarded file in the same change; CI fails
+ * the approved defaults/module patterns *and* every guarded file in the same change; CI fails
  * until they agree.
  *
  * Scope is deliberately narrow: only spec/plan/todo artifacts, only the files
@@ -30,8 +30,8 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 
 // The canonical spec/plan/todo artifact paths. These are the only artifact
-// file paths the pipeline files may reference. To change the convention, edit
-// this list and update every guarded file to match — CI enforces the pairing.
+// default file paths the pipeline files may reference. Stable module specs are
+// also accepted below. Update the policy and affected pipeline files together.
 const ARTIFACT_ALLOWLIST = new Set([
   'SPEC.md',        // spec, project root (produced by /spec, read by /build)
   'docs/SPEC.md',   // spec, alternate location accepted by /build
@@ -68,6 +68,10 @@ const GUARDED_FILES = [
   '.opencode/commands/spec.md',
   '.opencode/commands/plan.md',
   '.opencode/commands/build.md',
+  '.opencode/skills/spec-driven-development/SKILL.md',
+  '.opencode/skills/planning-and-task-breakdown/SKILL.md',
+  // OpenCode producers and consumers may only use the .opencode/ paths.
+  // Compatibility skills retain root defaults.
   // Skills the commands invoke
   'skills/spec-driven-development/SKILL.md',
   'skills/planning-and-task-breakdown/SKILL.md',
@@ -78,11 +82,11 @@ const GUARDED_FILES = [
   'docs/opencode-setup.md',
 ];
 
-// Matches a path-like token ending in a spec/plan/todo artifact filename,
+// Matches a path-like token ending in a spec/module-spec/plan/todo artifact filename,
 // including an optional directory prefix with bracket placeholders like
 // docs/features/[feature-name]/spec.md. Case-insensitive so SPEC.md and a
 // drifted spec.md are both caught, then compared against the allowlist.
-const ARTIFACT_RE = /(?:[A-Za-z0-9._[\]-]+\/)*(?:spec|plan|todo)\.md/gi;
+const ARTIFACT_RE = /(?:[A-Za-z0-9._[\]-]+\/)*(?:spec(?:-(?:[A-Za-z0-9-]+|<module>))?|plan|todo)\.md/gi;
 
 function findViolations(relPath) {
   const abs = path.join(ROOT, relPath);
@@ -94,7 +98,10 @@ function findViolations(relPath) {
     const matches = line.match(ARTIFACT_RE);
     if (!matches) return;
     for (const match of matches) {
-      if (!ARTIFACT_ALLOWLIST.has(match)) {
+      const modulePath = /^\.opencode\/spec\/SPEC-(?:[a-z0-9]+(?:-[a-z0-9]+)*|<module>)\.md$/.test(match);
+      const compatibilityModule = /^SPEC-[a-z0-9]+(?:-[a-z0-9]+)*\.md$/.test(match);
+      const approved = ARTIFACT_ALLOWLIST.has(match) || modulePath || (!relPath.startsWith('.opencode/') && compatibilityModule);
+      if (!approved || (relPath.startsWith('.opencode/') && !match.startsWith('.opencode/'))) {
         violations.push({ line: i + 1, match });
       }
     }
@@ -124,11 +131,29 @@ function main() {
     }
   }
 
+  // A valid producer path must also be writable under the repo's narrow Plan policy.
+  // Consumer installations may omit this configuration entirely.
+  const configFile = path.join(ROOT, '.opencode', 'opencode.json');
+  if (fs.existsSync(configFile)) {
+    try {
+      const config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+      const edit = config.agent?.plan?.permission?.edit;
+      const required = ['.opencode/spec/SPEC.md', '.opencode/spec/SPEC-*.md', '.opencode/tasks/plan.md', '.opencode/tasks/todo.md'];
+      if (!edit || typeof edit !== 'object' || Array.isArray(edit) || edit['*'] !== 'deny' || required.some((key) => edit[key] !== 'allow') || Object.entries(edit).some(([key, value]) => key !== '*' && value !== 'deny' && !required.includes(key))) {
+        console.log('  ✗  .opencode/opencode.json — Plan edit permissions must allow the index, module specs, plan and todo artifacts, and deny other writes');
+        errors++;
+      } else console.log('  ✓  .opencode/opencode.json — narrow planning artifact permissions');
+    } catch (error) {
+      console.log(`  ✗  .opencode/opencode.json — ${error.message}`);
+      errors++;
+    }
+  }
+
   const status = errors > 0 ? 'FAILED' : 'PASSED';
   console.log(`\n${checked} files checked — ${errors} error(s) — ${status}`);
 
   if (errors > 0) {
-    console.log('\nThe spec -> plan -> build pipeline expects one set of artifact paths.');
+    console.log('\nEach host pipeline must use its own approved artifact paths. OpenCode uses .opencode/.');
     console.log('Either use a path from ARTIFACT_ALLOWLIST, or change the convention');
     console.log('across every guarded file and update the allowlist in the same change.');
     process.exit(1);
