@@ -23,7 +23,7 @@ Structure context from most persistent to most transient:
 
 ```
 ┌─────────────────────────────────────┐
-│  1. Rules Files (CLAUDE.md, etc.)   │ ← Always loaded, project-wide
+│  1. Project Rules (when configured)   │ ← Always loaded, project-wide
 ├─────────────────────────────────────┤
 │  2. Spec / Architecture Docs        │ ← Loaded per feature/session
 ├─────────────────────────────────────┤
@@ -37,9 +37,9 @@ Structure context from most persistent to most transient:
 
 ### Level 1: Rules Files
 
-Create a rules file that persists across sessions. This is the highest-leverage context you can provide.
+Use existing project instructions when available. An optional rules file can preserve project conventions across sessions; it is not required for native skill discovery.
 
-**CLAUDE.md** (for Claude Code):
+**Optional OpenCode project rules** (`AGENTS.md` or files configured through `instructions` in `opencode.json`):
 ```markdown
 # Project: [Name]
 
@@ -71,11 +71,12 @@ Create a rules file that persists across sessions. This is the highest-leverage 
 [One short example of a well-written component in your style]
 ```
 
-**Equivalent files for other tools:**
+**Compatibility conventions for other tools:**
+- `CLAUDE.md` (Claude Code)
 - `.cursorrules` or `.cursor/rules/*.md` (Cursor)
 - `.windsurfrules` (Windsurf)
 - `.github/copilot-instructions.md` (GitHub Copilot)
-- `AGENTS.md` (OpenAI Codex)
+- `AGENTS.md` (OpenCode and OpenAI Codex)
 
 ### Level 2: Specs and Architecture
 

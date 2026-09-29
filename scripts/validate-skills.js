@@ -18,7 +18,7 @@ const path = require('path');
 
 const { lintSkill } = require('./lib/skill-lint');
 
-const SKILLS_DIR = path.resolve(__dirname, '..', 'skills');
+const SKILLS_DIR = path.resolve(__dirname, '..', process.argv[2] || 'skills');
 
 // ─── Main ────────────────────────────────────────────────────────────────────
 

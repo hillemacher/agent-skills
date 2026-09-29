@@ -7,6 +7,7 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const MIRRORS = [
+  ['skills', '.opencode/skills'],
   ['references', '.opencode/references'],
   ['agents', '.opencode/agents'],
 ];
@@ -53,7 +54,7 @@ function entriesIn(directory, label, errors) {
   return entries;
 }
 
-function validatePair(canonicalLabel, mirrorLabel, errors) {
+function validatePair(canonicalLabel, mirrorLabel, errors, overrides, used) {
   const canonical = entriesIn(path.join(ROOT, ...canonicalLabel.split('/')), canonicalLabel, errors);
   const mirror = entriesIn(path.join(ROOT, ...mirrorLabel.split('/')), mirrorLabel, errors);
 
@@ -64,11 +65,22 @@ function validatePair(canonicalLabel, mirrorLabel, errors) {
     } else if (source.type !== copy.type) {
       errors.push(`${canonicalLabel}/${relativePath} — must be a ${source.type === 'file' ? 'regular file' : source.type} in ${mirrorLabel}/`);
     } else if (source.type === 'file' && !source.content.equals(copy.content)) {
-      errors.push(`${canonicalLabel}/${relativePath} — content differs`);
+      const key = `${canonicalLabel}/${relativePath}`;
+      if (typeof overrides[key] === 'string') used.add(key);
+      else errors.push(`${key} — content differs without a declared adaptation`);
     }
   }
   for (const relativePath of mirror.keys()) {
-    if (!canonical.has(relativePath)) errors.push(`${canonicalLabel}/${relativePath} — not present in ${canonicalLabel}/`);
+    if (!canonical.has(relativePath)) {
+      const key = `${canonicalLabel}/${relativePath}`;
+      const declaration = overrides[key];
+      const entry = mirror.get(relativePath);
+      if (entry.type === 'file' && declaration && typeof declaration === 'object' && declaration.forkOnly === true) {
+        used.add(key);
+      } else if (entry.type === 'directory' && Object.keys(overrides).some((name) => name.startsWith(key + '/') && overrides[name]?.forkOnly === true)) {
+        // Parent directories of explicitly retained fork-only files.
+      } else errors.push(`${key} — not present in ${canonicalLabel}/`);
+    }
   }
 
   return [...canonical.values()].filter((entry) => entry.type === 'file').length;
@@ -76,14 +88,35 @@ function validatePair(canonicalLabel, mirrorLabel, errors) {
 
 function main() {
   const errors = [];
+  let overrides = {};
+  const overrideFile = path.join(ROOT, '.opencode', 'adapter-overrides.json');
+  try {
+    if (!lstat(overrideFile)?.isFile() || lstat(overrideFile)?.isSymbolicLink()) throw new Error('must be a regular file');
+    overrides = JSON.parse(fs.readFileSync(overrideFile, 'utf8'));
+    if (!overrides || Array.isArray(overrides) || typeof overrides !== 'object') throw new Error('must be a path-to-reason object');
+    for (const [key, value] of Object.entries(overrides)) {
+      const reason = typeof value === 'string' ? value : value?.reason;
+      const validValue = typeof value === 'string' || (value && typeof value === 'object' && value.forkOnly === true && Object.keys(value).every((field) => ['reason', 'forkOnly'].includes(field)));
+      if (!/^(skills|agents|references)\//.test(key) || key.split('/').some((part) => !part || part === '.' || part === '..') || key.includes('\\') || !validValue || typeof reason !== 'string' || !reason.trim()) {
+        errors.push(`adapter-overrides.json — invalid declaration: ${key}`);
+      }
+    }
+  } catch (error) {
+    errors.push(`adapter-overrides.json — ${error.message}`);
+    overrides = {};
+  }
+  const used = new Set();
   let files = 0;
-  for (const [canonical, mirror] of MIRRORS) files += validatePair(canonical, mirror, errors);
+  for (const [canonical, mirror] of MIRRORS) files += validatePair(canonical, mirror, errors, overrides, used);
+  for (const key of Object.keys(overrides)) {
+    if (!used.has(key)) errors.push(`adapter-overrides.json — stale declaration: ${key}`);
+  }
 
   const status = errors.length === 0 ? 'PASSED' : 'FAILED';
   console.log('Checking OpenCode adapter mirrors...\n');
   for (const error of errors) console.log(`  ✗  ${error}`);
   if (errors.length === 0) {
-    for (const [canonical, mirror] of MIRRORS) console.log(`  ✓  ${mirror}/ exactly matches ${canonical}/`);
+    for (const [canonical, mirror] of MIRRORS) console.log(`  ✓  ${mirror}/ matches ${canonical}/ inventory and declared adaptations`);
   }
   console.log(`\n${MIRRORS.length} mirror pair(s) checked — ${status} (${files} canonical file(s))`);
   if (errors.length > 0) process.exitCode = 1;

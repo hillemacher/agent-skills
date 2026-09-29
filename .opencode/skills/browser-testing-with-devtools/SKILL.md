@@ -25,14 +25,14 @@ Use Chrome DevTools MCP to give your agent eyes into the browser. This bridges t
 
 ### Installation
 
-Add the following to your project's `.mcp.json` or Claude Code settings:
+Merge this server entry into your existing `opencode.json` or `opencode.jsonc` configuration (preserve other settings):
 
 ```json
 {
-  "mcpServers": {
+  "mcp": {
     "chrome-devtools": {
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest", "--isolated"]
+      "type": "local",
+      "command": ["npx", "-y", "chrome-devtools-mcp@latest", "--isolated"]
     }
   }
 }

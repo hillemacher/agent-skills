@@ -50,7 +50,7 @@ Never ask what you can read. Before the first question, gather:
 | Existing linters | `eslint.config.*`, `biome.json`, `.ruff.toml` |
 | Coverage today | `coverage/` output, or run the suite once |
 | CI | `.github/workflows/`, `.gitlab-ci.yml` |
-| Agent harness | `.claude/`, `.codex/`, `AGENTS.md` |
+| Agent harness | `.opencode/`, existing project instructions |
 
 Report what you found in two lines, then ask only what's left.
 
@@ -137,7 +137,7 @@ number and no command in this column is an aspiration, not a constraint.
 | W1 | `no-explicit-any` | `src/legacy/**` | Rewrite tracked in ENG-441 | @addy | 2026-11-01 |
 ```
 
-Then add one line to `AGENTS.md` and `CLAUDE.md`: `Read CONSTRAINTS.md before writing code. Do not weaken it to make a change pass.`
+Read `CONSTRAINTS.md` as part of this workflow. If the project already has agent instructions, add a reference there when appropriate: `Read CONSTRAINTS.md before writing code. Do not weaken it to make a change pass.` Creating a rules file is optional; do not create both `AGENTS.md` and `CLAUDE.md`.
 
 ### Step 4: Install what each dimension needs
 
@@ -298,7 +298,7 @@ The skill was applied correctly when:
 - [ ] At least one constraint is external (not judged by this project's own tests)
 - [ ] Measured-only metrics record today's value and a direction
 - [ ] Exceptions have an owner and an expiry date
-- [ ] `AGENTS.md` or `CLAUDE.md` points at the file
+- [ ] The workflow reads the constraints file; existing project instructions may also reference it
 - [ ] A trial run on the current branch produces no failures the user disagrees with
 
 ## See Also

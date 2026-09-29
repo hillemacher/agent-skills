@@ -389,3 +389,29 @@ test('tilde fence info strings may contain backticks', () => {
   assert.equal(result.status, 0, result.stdout + result.stderr);
   assert.match(result.stdout, /1 skills checked — 0 error\(s\) — PASSED/);
 });
+
+test('checks references and static markdown links in the installed OpenCode layout', () => {
+  const root = makeSandbox();
+  writeFile(root, '.opencode/references/checklist.md', '# Checklist\n');
+  writeFile(root, '.opencode/skills/example/SKILL.md', 'See ../../references/checklist.md.\n');
+  writeFile(root, '.opencode/agents/reviewer.md', 'See [composition](../docs/agents.md).\n');
+  assert.equal(run(root).status, 1);
+  writeFile(root, '.opencode/agents/reviewer.md', 'See [composition](../references/checklist.md).\n');
+  assert.equal(run(root).status, 0);
+  fs.rmSync(path.join(root, '.opencode/references/checklist.md'));
+  assert.equal(run(root).status, 1);
+});
+
+test('rejects adapter links to repository docs that are not shipped', () => {
+  const root = makeSandbox();
+  writeFile(root, 'docs/agents.md', '# Existing repo docs\n');
+  writeFile(root, '.opencode/agents/reviewer.md', '[composition](../../docs/agents.md)\n');
+  assert.equal(run(root).status, 1);
+});
+
+test('rejects backtick reference paths that escape the installed pack', () => {
+  const root = makeSandbox();
+  writeFile(root, 'references/checklist.md', '# Repo-only reference\n');
+  writeFile(root, '.opencode/skills/example/SKILL.md', 'See `../../../references/checklist.md`.\n');
+  assert.equal(run(root).status, 1);
+});

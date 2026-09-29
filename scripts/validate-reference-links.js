@@ -56,7 +56,7 @@ const AGENTS_DIR = path.join(ROOT, 'agents');
 const REFERENCE_LINK_RE = /(?<![A-Za-z0-9._/-])((?:\.\.\/)*references\/[A-Za-z0-9._-]+\.md)/g;
 
 // A link is resolved from the directory of the file that contains it.
-function findViolations(file) {
+function findViolations(file, allowedRoot) {
   const violations = [];
   const baseDir = path.dirname(file);
   // Share the linter's fence rules; blanked lines preserve diagnostic positions.
@@ -66,7 +66,7 @@ function findViolations(file) {
     for (const match of line.matchAll(REFERENCE_LINK_RE)) {
       const link = match[1];
       const target = path.resolve(baseDir, link);
-      if (!fs.existsSync(target)) {
+      if (!fs.existsSync(target) || (allowedRoot && !target.startsWith(allowedRoot + path.sep))) {
         violations.push({ line: i + 1, link, target });
       }
     }
@@ -123,7 +123,7 @@ function main() {
 
       console.log(`  ✗  ${toPosix(file)}`);
       for (const { line, link, target } of violations) {
-        console.log(`       L${line}: ${link} — resolves to ${toPosix(target)}, which does not exist`);
+        console.log(`       L${line}: ${link} — resolves to ${toPosix(target)}, which is unavailable in the installed pack`);
         errors++;
         if (file !== skillFile) referenceFileErrors++;
       }
@@ -147,8 +147,43 @@ function main() {
     }
   }
 
+  // Inspect the actual consumer layout, including static relative markdown links.
+  const adapterRoot = path.join(ROOT, '.opencode');
+  let adapterChecked = 0;
+  function checkAdapter(directory) {
+    if (!fs.existsSync(directory)) return;
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const file = path.join(directory, entry.name);
+      if (entry.isDirectory()) { checkAdapter(file); continue; }
+      if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+      adapterChecked++;
+      const content = stripFencedCodeBlocks(fs.readFileSync(file, 'utf8'));
+      const seen = new Set();
+      const violations = findViolations(file, adapterRoot);
+      content.split('\n').forEach((line, index) => {
+        for (const match of line.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
+          const link = match[1].split('#')[0];
+          if (!link || /^(?:[a-z][a-z0-9+.-]*:|\/)/i.test(link)) continue;
+          // Placeholder paths describe future artifacts rather than static resources.
+          if (/[\[\]<>]/.test(link)) continue;
+          const target = path.resolve(path.dirname(file), link);
+          if (!target.startsWith(adapterRoot + path.sep) || !fs.existsSync(target)) violations.push({ line: index + 1, link, target });
+        }
+      });
+      for (const violation of violations) {
+        const key = `${violation.line}:${violation.link}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        console.log(`  ✗  ${toPosix(file)} L${violation.line}: ${violation.link} — resolves to ${toPosix(violation.target)}, which is unavailable in the installed pack`);
+        errors++;
+      }
+    }
+  }
+  for (const kind of ['skills', 'agents', 'commands', 'references']) checkAdapter(path.join(adapterRoot, kind));
+
   const status = errors > 0 ? 'FAILED' : 'PASSED';
   console.log(`\n${checked} skills checked — ${errors} error(s) — ${status}`);
+  if (adapterChecked > 0) console.log(`${adapterChecked} OpenCode markdown files checked in the installed layout`);
   if (agentChecked > 0) console.log(`${agentChecked} agents checked — ${agentErrors} agent link error(s)`);
 
   if (errors > 0) {
