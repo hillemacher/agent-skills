@@ -115,7 +115,7 @@ function walkFiles(root, destinationPrefix) {
 function sourceAssets(sourceRoot) {
   const locations = [
     ['.opencode/commands', '.opencode/commands'],
-    ['skills', '.opencode/skills'],
+    ['.opencode/skills', '.opencode/skills'],
     ['.opencode/agents', '.opencode/agents'],
     ['.opencode/references', '.opencode/references'],
   ];
@@ -259,7 +259,7 @@ function printSummary(plan, dryRun) {
   if (dryRun) console.log('Dry run — no files were written.');
   console.log(`Install: ${plan.create.length}, update: ${plan.update.length}, adopt: ${plan.adopt.length}, unchanged: ${plan.unchanged.length}, retained: ${plan.retained.length}.`);
   if (plan.retained.length) console.log(`Retained obsolete installer-owned assets: ${plan.retained.join(', ')}`);
-  console.log(`\nAdd this to the target project's AGENTS.md (review and adapt it; the installer never edits AGENTS.md):
+  console.log(`\nOpenCode discovers the installed skills natively; no AGENTS.md is required. Optional: add this to existing AGENTS.md or custom rules/instructions to enforce the workflow (review and adapt it; the installer never edits AGENTS.md or instructions):
 
 ## Skill-Driven Execution
 

@@ -35,8 +35,8 @@ function makeSource() {
   const source = makeSandbox();
   writeFile(source, '.opencode/commands/review.md', '---\ndescription: Review\n---\nReview it.\n');
   writeFile(source, '.opencode/commands/ship.md', 'See ../references/checklist.md.\n');
-  writeFile(source, 'skills/example/SKILL.md', '---\nname: example\ndescription: Example\n---\nSee ../../references/checklist.md.\n');
-  writeFile(source, 'skills/example/scripts/run.sh', '#!/bin/sh\necho run\n', 0o755);
+  writeFile(source, '.opencode/skills/example/SKILL.md', '---\nname: example\ndescription: Example\n---\nSee ../../references/checklist.md.\n');
+  writeFile(source, '.opencode/skills/example/scripts/run.sh', '#!/bin/sh\necho run\n', 0o755);
   writeFile(source, '.opencode/agents/reviewer.md', '---\nname: reviewer\ndescription: Reviewer\n---\n');
   writeFile(source, '.opencode/agents/auditor.md', 'Use ../references/checklist.md.\n');
   writeFile(source, '.opencode/references/checklist.md', '# Checklist\n');
@@ -197,4 +197,16 @@ test('rejects symlinks inside the source asset tree', () => {
   assert.equal(result.status, 3, result.stdout + result.stderr);
   assert.match(result.stderr, /Source asset must not be a symlink/);
   assert.equal(fs.existsSync(path.join(target, '.opencode')), false);
+});
+
+test('installs adapted skills rather than upstream-facing skills without requiring rules', () => {
+  const source = makeSource();
+  writeFile(source, 'skills/example/SKILL.md', 'Upstream Claude-only content\n');
+  const target = makeSandbox();
+  initGitWorktree(target);
+  const result = run(source, target);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(fs.readFileSync(path.join(target, '.opencode/skills/example/SKILL.md'), 'utf8'), /name: example/);
+  assert.equal(fs.existsSync(path.join(target, 'AGENTS.md')), false);
+  assert.equal(fs.existsSync(path.join(target, '.opencode/skills/upstream-sync')), false);
 });
