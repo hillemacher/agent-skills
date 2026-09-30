@@ -2,6 +2,8 @@
 
 This fork defaults to OpenCode adaptations under `.opencode/`. Claude Code continues to use the root `skills/`, `agents/`, `references/`, `.claude/commands/`, and `.claude-plugin/` assets. Do not copy OpenCode configuration into Claude settings.
 
+For local fork maintenance, you can symlink `.claude/skills/upstream-sync` to a local `.agents/skills/upstream-sync/` skill. Claude Code discovers the symlink as a project skill; OpenCode reads the same instructions through `.agents/skills/`. Both locations are ignored by Git and are not included in the consumer pack.
+
 The root [orchestration reference](../references/orchestration-patterns.md#claude-code-compatibility) retains Claude plugin discovery, Agent tool, and Agent Teams examples for that adapter. Those mechanisms are not prerequisites for OpenCode dispatch.
 
 For Chrome DevTools MCP in Claude Code, merge the following into `.mcp.json` or the appropriate Claude settings:

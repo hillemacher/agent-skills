@@ -9,5 +9,4 @@ node_modules/
 evals/results/
 evals/plugin/results/
 __pycache__/
-.agents/skills/*
-!.agents/skills/upstream-sync/
+.agents/skills/

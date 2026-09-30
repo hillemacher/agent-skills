@@ -137,7 +137,7 @@ number and no command in this column is an aspiration, not a constraint.
 | W1 | `no-explicit-any` | `src/legacy/**` | Rewrite tracked in ENG-441 | @addy | 2026-11-01 |
 ```
 
-Read `CONSTRAINTS.md` as part of this workflow. If the project already has agent instructions, add a reference there when appropriate: `Read CONSTRAINTS.md before writing code. Do not weaken it to make a change pass.` Creating a rules file is optional; do not create both `AGENTS.md` and `CLAUDE.md`.
+Read `CONSTRAINTS.md` as part of this workflow. If the project already has OpenCode instructions, add a reference there when appropriate: `Read CONSTRAINTS.md before writing code. Do not weaken it to make a change pass.` Creating an `AGENTS.md` file is optional.
 
 ### Step 4: Install what each dimension needs
 

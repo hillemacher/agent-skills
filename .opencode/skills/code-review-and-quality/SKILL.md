@@ -202,24 +202,24 @@ Check the author's verification story:
 - Is there a before/after comparison?
 ```
 
-## Multi-Model Review Pattern
+## Independent Review Pattern
 
-Use different models for different review perspectives:
+When the OpenCode host has a second on-prem model configured and selectable through Task, use it for another review perspective. Otherwise, use a fresh reviewer session with the configured on-prem model:
 
 ```
-Model A writes the code
+On-prem author session writes the code
     │
     ▼
-Model B reviews for correctness and architecture
+Fresh on-prem reviewer session checks correctness and architecture
     │
     ▼
-Model A addresses the feedback
+Author session addresses the feedback
     │
     ▼
 Human makes the final call
 ```
 
-This catches issues that a single model might miss — different models have different blind spots.
+Different models can catch different issues. Keep every review within the host's on-prem model configuration; never route code or prompts to an external AI model for this pattern.
 
 **Example prompt for a review agent:**
 ```

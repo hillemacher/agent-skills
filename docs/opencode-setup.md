@@ -46,7 +46,9 @@ skill's required spec, plan, testing, and review steps. Read existing project
 conventions and CONSTRAINTS.md when relevant.
 ```
 
-The maintenance skill `.agents/skills/upstream-sync/` is tracked for contributors and discoverable by OpenCode in a fresh clone. It is not part of `.opencode/skills/` and is never installed into consumer projects.
+Local maintenance skills under `.agents/skills/` and `.claude/skills/` are ignored by Git and are not included in the consumer pack. Contributors who keep an upstream-sync skill locally can link it into `.claude/skills/` for Claude Code discovery; OpenCode reads it from `.agents/skills/`. A fresh clone does not include this local skill.
+
+OpenCode review workflows in this pack use only on-prem models configured in the host. Configure model routing in each installation; this repository does not pin a model ID or endpoint. An optional second-model review requires another on-prem model that OpenCode can select. Ordinary web-service and development-tool examples are independent of this AI model policy.
 
 ## Commands and personas
 

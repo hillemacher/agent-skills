@@ -2,6 +2,8 @@
 
 Reference catalog of agent orchestration patterns this repo endorses, plus anti-patterns to avoid. Read this before adding a new slash command that coordinates multiple personas, or before introducing a new persona that "wraps" existing ones.
 
+All AI agent sessions in this OpenCode pack, including the main session and dispatched reviewers, must use on-prem models configured in the OpenCode host. Do not send prompts or artifacts to an external AI model. Model IDs and endpoints belong in host configuration, not this pack.
+
 The governing rule: **the user (or a slash command) is the orchestrator. Personas do not invoke other personas.** Skills are mandatory hops inside a persona's workflow.
 
 ---
@@ -110,7 +112,7 @@ main agent → research sub-agent (reads 50 files) → digest → main agent con
 
 **Cost:** one isolated sub-agent context. Worth it any time the alternative is loading hundreds of files into the main context.
 
-Use OpenCode's built-in `explore` subagent for read-only codebase research. Select models through the host configuration rather than assuming a vendor-specific model.
+Use OpenCode's built-in `explore` subagent for read-only codebase research. Use only on-prem models configured in the OpenCode host.
 
 ## OpenCode dispatch
 
@@ -118,7 +120,7 @@ OpenCode discovers specialist definitions in `.opencode/agents/` and `~/.config/
 
 The user can invoke a specialist with `@code-reviewer`. The main agent dispatches programmatically using the Task tool with `subagent_type: "code-reviewer"` and a prompt containing the artifact, scope, and expected report. `@mention` is user-facing invocation syntax, not a substitute for a tool call inside an orchestrator.
 
-For `/ship`, dispatch independent reviewers concurrently when Task dispatch and the active permissions allow it. Pass the same change scope to each reviewer and merge the returned reports in the main session. Do not assume a Claude Agent Teams API, teammate messaging, fixed model, or background-task feature.
+For `/ship`, dispatch independent reviewers concurrently when Task dispatch and the active permissions allow it. Pass the same change scope to each reviewer and merge the returned reports in the main session. Use OpenCode's Task tool and the host's on-prem model configuration; do not assume teammate messaging, a fixed model, or a background-task feature.
 
 If dispatch is unavailable, denied, or a persona is absent, report the limitation. Perform equivalent passes in the main context only when the relevant persona instructions are available; identify this as a sequential fallback. If any required pass cannot be completed, report it as incomplete and return NO-GO.
 

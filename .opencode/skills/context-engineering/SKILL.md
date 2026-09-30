@@ -71,12 +71,7 @@ Use existing project instructions when available. An optional rules file can pre
 [One short example of a well-written component in your style]
 ```
 
-**Compatibility conventions for other tools:**
-- `CLAUDE.md` (Claude Code)
-- `.cursorrules` or `.cursor/rules/*.md` (Cursor)
-- `.windsurfrules` (Windsurf)
-- `.github/copilot-instructions.md` (GitHub Copilot)
-- `AGENTS.md` (OpenCode and OpenAI Codex)
+For OpenCode, read existing `AGENTS.md` and any files listed in the `instructions` configuration. Do not create a rules file just to make skills discoverable.
 
 ### Level 2: Specs and Architecture
 

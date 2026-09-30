@@ -1,15 +1,16 @@
 {
   "skills/browser-testing-with-devtools/SKILL.md": "Configure Chrome DevTools MCP through OpenCode configuration.",
-  "skills/code-simplification/SKILL.md": "Read applicable existing conventions without requiring Claude rules.",
+  "skills/code-simplification/SKILL.md": "Keep the OpenCode skill focused on its workflow without source-adapter attribution.",
   "skills/documentation-and-adrs/SKILL.md": "Treat existing project instructions as optional.",
   "skills/context-engineering/SKILL.md": "Describe optional OpenCode rules and native skill discovery.",
   "skills/constraint-driven-development/SKILL.md": "Use optional existing instructions instead of requiring two rules files.",
-  "skills/doubt-driven-development/SKILL.md": "Use fresh OpenCode Task review sessions and pack composition policy.",
+  "skills/doubt-driven-development/SKILL.md": "Use fresh OpenCode Task review sessions and on-prem models without external model CLIs.",
+  "skills/code-review-and-quality/SKILL.md": "Constrain optional second-model review to host-configured on-prem models.",
   "skills/planning-and-task-breakdown/SKILL.md": "Record specification/module/task-target handoff and persist permitted OpenCode planning artifacts.",
   "skills/spec-driven-development/SKILL.md": "Use OpenCode capability-index/module paths and hand off approved local or external specifications.",
   "agents/code-reviewer.md": "Describe actual OpenCode command dispatch and link the installed composition reference.",
   "agents/test-engineer.md": "Describe actual OpenCode command dispatch and link the installed composition reference.",
   "agents/web-performance-auditor.md": "Link composition guidance to the installed OpenCode orchestration reference.",
   "agents/security-auditor.md": "Link composition guidance to the installed OpenCode orchestration reference.",
-  "references/orchestration-patterns.md": "Use OpenCode dispatch and pack policy instead of Claude plugin and Agent Teams mechanisms."
+  "references/orchestration-patterns.md": "Use OpenCode dispatch, on-prem models, and pack composition policy."
 }
