@@ -5,8 +5,10 @@ node_modules/
 *.log
 .claude/.simplify-ignore-cache/
 .claude/sdd-cache/
-.claude/skills/
+.claude/skills/*
+!.claude/skills/upstream-sync
 evals/results/
 evals/plugin/results/
 __pycache__/
-.agents/skills/
+.agents/skills/*
+!.agents/skills/upstream-sync/

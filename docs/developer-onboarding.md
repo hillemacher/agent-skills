@@ -83,7 +83,7 @@ Run the relevant subset before every PR. A PR that arrives green through Tier 1 
 
 Make OpenCode-specific edits in `.opencode/skills/`, `.opencode/agents/`, and `.opencode/references/`. Preserve upstream-facing root files. Declare each intentional difference in `.opencode/adapter-overrides.json`; undeclared or stale differences fail validation. Copy complete supporting resources when porting new skills. See [OpenCode setup](opencode-setup.md) for the declaration format.
 
-If you have a local `.agents/skills/upstream-sync/SKILL.md`, use it to review upstream deltas before an approved merge. Local maintenance skills are ignored by Git and are not shipped in the consumer pack. Never bulk-copy over adapted content.
+Use the tracked `.agents/skills/upstream-sync/SKILL.md` to review upstream deltas before an approved merge. It and its Claude Code discovery symlink are available in fresh clones and are not shipped in the consumer pack. Other local maintenance skills remain ignored by Git. Never bulk-copy over adapted content.
 
 ### Path 1: Fixing or improving an existing skill (most common, best first PR)
 

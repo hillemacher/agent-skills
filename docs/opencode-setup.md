@@ -17,6 +17,35 @@ The installer never edits `AGENTS.md`, other project instructions, or `.opencode
 
 For a single skill, copy the complete adapted folder into `.opencode/skills/<name>/`, including any `scripts/` and local `references/`. Also copy `.opencode/references/` when the skill uses shared checklists. The full-pack installer avoids missing dependencies.
 
+## Copy into an existing artifact folder
+
+Use the interactive copier when the target is the folder containing `agents/`, `commands/`, `references/`, and `skills/` directly, for example an existing OpenCode configuration folder:
+
+```bash
+node scripts/copy-opencode-assets.js /path/to/artifact-folder --dry-run
+node scripts/copy-opencode-assets.js /path/to/artifact-folder
+```
+
+The copier creates missing folders and does not require Git. It copies only this repository's adapted `.opencode/` assets; it does not append `.opencode/` to the target or copy configuration, contributor instructions, planning artifacts, or installer manifests. `--source /path/to/another/agent-skills-checkout` selects another source repository root. `--help` prints usage.
+
+Missing artifacts are added automatically. Identical artifacts are left unchanged. When an existing artifact's source-matching files differ in content or permissions, the copier asks for:
+
+| Answer | Behavior |
+|---|---|
+| `r` or `replace` | Replace this artifact's matching files and add missing source files |
+| `s` or `skip` | Leave this artifact untouched; pressing Enter also skips |
+| `ra` or `replace all` | Replace this and all remaining conflicting artifacts of the current type |
+| `sa` or `skip all` | Skip this and all remaining conflicting artifacts of the current type |
+| `q` | Cancel without writing any files |
+
+Types are processed in order: agents, commands, references, skills. A bulk answer applies only to conflicts within that type; missing artifacts are still added. Agents, commands, and shared references receive individual file decisions. Each skill receives one decision for its complete directory, including supporting scripts and local references.
+
+Replacing a skill merges its source files into the existing directory: matching files are updated, missing files are added, and destination-only files remain. For example, replacing `skills/example/` updates its `SKILL.md`, adds an incoming `scripts/run.sh`, and retains a local `notes.md`. Skipping that skill leaves every file untouched and adds no supporting files to it. No artifact directory is deleted, and obsolete or unrelated artifacts remain in place.
+
+All answers are collected before copying. Invalid answers repeat the prompt; Ctrl+C or exhausted input with unresolved conflicts aborts without writing. Newline-delimited stdin answers are supported. The copier rejects symlinks along asset paths, file/directory mismatches, and overlapping source and destination roots. It rechecks selected destination files after prompting to detect intervening changes. Writes use temporary files and atomic renames; a write failure restores original files and removes new files and directories, reporting any rollback failures.
+
+`--dry-run` lists additions, unchanged artifacts, and conflicts without prompting or writing. The final summary reports created, replaced, skipped, and unchanged artifact counts by type; an existing skill that only gains missing resources counts as one created/additive artifact. On Windows, permission differences alone do not cause a conflict because POSIX file permissions are not fully supported.
+
 ## Repository layout
 
 | Assets | Upstream-facing source | OpenCode adaptation |
@@ -46,7 +75,7 @@ skill's required spec, plan, testing, and review steps. Read existing project
 conventions and CONSTRAINTS.md when relevant.
 ```
 
-Local maintenance skills under `.agents/skills/` and `.claude/skills/` are ignored by Git and are not included in the consumer pack. Contributors who keep an upstream-sync skill locally can link it into `.claude/skills/` for Claude Code discovery; OpenCode reads it from `.agents/skills/`. A fresh clone does not include this local skill.
+The fork-maintenance skill at `.agents/skills/upstream-sync/SKILL.md` and its `.claude/skills/upstream-sync` symlink are tracked and available in fresh clones. Claude Code discovers it through the symlink; OpenCode reads it from `.agents/skills/`. It is not included in the consumer pack. Other local skills under these directories remain ignored by Git.
 
 OpenCode review workflows in this pack use only on-prem models configured in the host. Configure model routing in each installation; this repository does not pin a model ID or endpoint. An optional second-model review requires another on-prem model that OpenCode can select. Ordinary web-service and development-tool examples are independent of this AI model policy.
 

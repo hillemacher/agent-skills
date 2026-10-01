@@ -84,6 +84,9 @@ jobs:
       - name: Test OpenCode asset installer
         run: node --test scripts/install-opencode-assets-test.js
 
+      - name: Test OpenCode artifact copier
+        run: node --test scripts/copy-opencode-assets-test.js
+
   # Ubuntu coverage stays in the existing jobs above, preserving their check names.
   validate-platforms:
     name: Validate tooling (${{ matrix.os }})
@@ -113,6 +116,7 @@ jobs:
           scripts/validate-commands-test.js
           scripts/validate-artifact-paths-test.js
           scripts/install-opencode-assets-test.js
+          scripts/copy-opencode-assets-test.js
 
       - name: Validate all skills
         run: node scripts/validate-skills.js
