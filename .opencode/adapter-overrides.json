@@ -2,6 +2,7 @@
   "skills/browser-testing-with-devtools/SKILL.md": "Configure Chrome DevTools MCP through OpenCode configuration.",
   "skills/code-simplification/SKILL.md": "Keep the OpenCode skill focused on its workflow without source-adapter attribution.",
   "skills/documentation-and-adrs/SKILL.md": "Treat existing project instructions as optional.",
+  "skills/idea-refine/SKILL.md": "Use the installed OpenCode skill path in the helper command example.",
   "skills/context-engineering/SKILL.md": "Describe optional OpenCode rules and native skill discovery.",
   "skills/constraint-driven-development/SKILL.md": "Use optional existing instructions instead of requiring two rules files.",
   "skills/doubt-driven-development/SKILL.md": "Use fresh OpenCode Task review sessions and on-prem models without external model CLIs.",

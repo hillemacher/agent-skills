@@ -19,7 +19,7 @@ This skill is primarily an interactive dialogue. Invoke it with an idea, and the
 
 ```bash
 # Optional: Initialize the ideas directory
-bash skills/idea-refine/scripts/idea-refine.sh
+bash .opencode/skills/idea-refine/scripts/idea-refine.sh
 ```
 
 **Trigger Phrases:**
