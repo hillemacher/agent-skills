@@ -7,9 +7,9 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const MIRRORS = [
-  ['skills', '.opencode/skills'],
-  ['references', '.opencode/references'],
-  ['agents', '.opencode/agents'],
+  ['skills', 'adapters/opencode/skills'],
+  ['references', 'adapters/opencode/references'],
+  ['agents', 'adapters/opencode/agents'],
 ];
 
 function lstat(file) {
@@ -89,7 +89,7 @@ function validatePair(canonicalLabel, mirrorLabel, errors, overrides, used) {
 function main() {
   const errors = [];
   let overrides = {};
-  const overrideFile = path.join(ROOT, '.opencode', 'adapter-overrides.json');
+  const overrideFile = path.join(ROOT, 'adapters', 'opencode', 'adapter-overrides.json');
   try {
     if (!lstat(overrideFile)?.isFile() || lstat(overrideFile)?.isSymbolicLink()) throw new Error('must be a regular file');
     overrides = JSON.parse(fs.readFileSync(overrideFile, 'utf8'));

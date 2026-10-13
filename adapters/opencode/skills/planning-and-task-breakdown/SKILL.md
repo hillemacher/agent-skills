@@ -25,7 +25,7 @@ Decompose work into small, verifiable tasks with explicit acceptance criteria. G
 
 ### Step 1: Enter Plan Mode
 
-Before implementation, inspect the codebase without implementation edits. Persist only designated planning artifacts permitted by the host:
+Before writing any code, operate in read-only mode:
 
 - Read the spec and relevant codebase sections
 - Identify existing patterns and conventions
@@ -149,7 +149,7 @@ If a task is L or larger, it should be broken into smaller tasks. An agent perfo
 - **Plan document:** Save the implementation plan to `.opencode/tasks/plan.md`. Record the approved specification source, selected module (if applicable), and task list target so `/build` can resume the same work without guessing. This is always a markdown file — design decisions, risks, and open questions don't map cleanly onto individual tracker issues.
 - **Task list:** Record each task in the **task list target** (defined below).
 
-Create the `.opencode/tasks/` directory if it does not exist. In OpenCode Plan mode, persist only artifacts permitted by the current configuration. If these paths are denied, present the plan and explain that Build mode or a narrow permission exception is needed; do not attempt implementation edits.
+Create the `.opencode/tasks/` directory if it does not exist. OpenCode Plan mode does not write files: present the plan there and ask the user to switch to Build mode to save it. Saving planning artifacts does not authorize implementation edits.
 
 **Never overwrite an incomplete plan.** Before writing `.opencode/tasks/plan.md` or `.opencode/tasks/todo.md`, check whether they already exist and still contain unchecked tasks:
 

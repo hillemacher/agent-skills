@@ -33,13 +33,13 @@ function initGitWorktree(root) {
 
 function makeSource() {
   const source = makeSandbox();
-  writeFile(source, '.opencode/commands/review.md', '---\ndescription: Review\n---\nReview it.\n');
-  writeFile(source, '.opencode/commands/ship.md', 'See ../references/checklist.md.\n');
-  writeFile(source, '.opencode/skills/example/SKILL.md', '---\nname: example\ndescription: Example\n---\nSee ../../references/checklist.md.\n');
-  writeFile(source, '.opencode/skills/example/scripts/run.sh', '#!/bin/sh\necho run\n', 0o755);
-  writeFile(source, '.opencode/agents/reviewer.md', '---\nname: reviewer\ndescription: Reviewer\n---\n');
-  writeFile(source, '.opencode/agents/auditor.md', 'Use ../references/checklist.md.\n');
-  writeFile(source, '.opencode/references/checklist.md', '# Checklist\n');
+  writeFile(source, 'adapters/opencode/commands/review.md', '---\ndescription: Review\n---\nReview it.\n');
+  writeFile(source, 'adapters/opencode/commands/ship.md', 'See ../references/checklist.md.\n');
+  writeFile(source, 'adapters/opencode/skills/example/SKILL.md', '---\nname: example\ndescription: Example\n---\nSee ../../references/checklist.md.\n');
+  writeFile(source, 'adapters/opencode/skills/example/scripts/run.sh', '#!/bin/sh\necho run\n', 0o755);
+  writeFile(source, 'adapters/opencode/agents/reviewer.md', '---\nname: reviewer\ndescription: Reviewer\n---\n');
+  writeFile(source, 'adapters/opencode/agents/auditor.md', 'Use ../references/checklist.md.\n');
+  writeFile(source, 'adapters/opencode/references/checklist.md', '# Checklist\n');
   return source;
 }
 
@@ -122,12 +122,12 @@ test('updates unchanged managed files, rejects local edits, and force replaces t
   initGitWorktree(target);
   assert.equal(run(source, target).status, 0);
 
-  writeFile(source, '.opencode/commands/review.md', '---\ndescription: Updated\n---\nUpdated.\n');
+  writeFile(source, 'adapters/opencode/commands/review.md', '---\ndescription: Updated\n---\nUpdated.\n');
   assert.equal(run(source, target).status, 0);
   assert.equal(fs.readFileSync(path.join(target, '.opencode/commands/review.md'), 'utf8'), '---\ndescription: Updated\n---\nUpdated.\n');
 
   writeFile(target, '.opencode/commands/review.md', 'local customization\n');
-  writeFile(source, '.opencode/commands/review.md', '---\ndescription: Newer\n---\nNewer.\n');
+  writeFile(source, 'adapters/opencode/commands/review.md', '---\ndescription: Newer\n---\nNewer.\n');
   const conflict = run(source, target);
   assert.equal(conflict.status, 2, conflict.stdout + conflict.stderr);
   assert.equal(fs.readFileSync(path.join(target, '.opencode/commands/review.md'), 'utf8'), 'local customization\n');
@@ -142,7 +142,7 @@ test('retains removed managed assets and rejects a managed destination symlink',
   const target = makeSandbox();
   initGitWorktree(target);
   assert.equal(run(source, target).status, 0);
-  fs.rmSync(path.join(source, '.opencode/agents/reviewer.md'));
+  fs.rmSync(path.join(source, 'adapters/opencode/agents/reviewer.md'));
 
   const update = run(source, target);
   assert.equal(update.status, 0, update.stdout + update.stderr);
@@ -190,7 +190,7 @@ test('rejects symlinks inside the source asset tree', () => {
   const source = makeSource();
   const target = makeSandbox();
   initGitWorktree(target);
-  fs.symlinkSync('checklist.md', path.join(source, '.opencode/references/linked-checklist.md'));
+  fs.symlinkSync('checklist.md', path.join(source, 'adapters/opencode/references/linked-checklist.md'));
 
   const result = run(source, target);
 

@@ -1,6 +1,6 @@
 # OpenCode Setup
 
-This fork maintains OpenCode adaptations in `.opencode/`. The root `skills/`, `agents/`, and `references/` remain upstream-facing compatibility assets. OpenCode consumes checked-in copies rather than a skills symlink.
+This fork maintains OpenCode adaptations in `adapters/opencode/`, the pack source that the installer and copier place into a project's `.opencode/`. The root `skills/`, `agents/`, and `references/` remain upstream-facing compatibility assets. OpenCode consumes the installed copies rather than a skills symlink.
 
 ## Install the complete pack
 
@@ -15,7 +15,7 @@ The target must be an existing Git worktree. The installer copies adapted skills
 
 The installer never edits `AGENTS.md`, other project instructions, or `.opencode/opencode.json`. No rules file is required: OpenCode lists skill descriptions through its native `skill` tool and loads the selected skill on demand. Installing skills makes them available; it does not guarantee that every matching task will invoke one.
 
-For a single skill, copy the complete adapted folder into `.opencode/skills/<name>/`, including any `scripts/` and local `references/`. Also copy `.opencode/references/` when the skill uses shared checklists. The full-pack installer avoids missing dependencies.
+For a single skill, copy the complete adapted folder from `adapters/opencode/skills/<name>/` into `.opencode/skills/<name>/`, including any `scripts/` and local `references/`. Also copy `adapters/opencode/references/` into `.opencode/references/` when the skill uses shared checklists. The full-pack installer avoids missing dependencies.
 
 ## Copy into an existing artifact folder
 
@@ -26,7 +26,7 @@ node scripts/copy-opencode-assets.js /path/to/artifact-folder --dry-run
 node scripts/copy-opencode-assets.js /path/to/artifact-folder
 ```
 
-The copier creates missing folders and does not require Git. It copies only this repository's adapted `.opencode/` assets; it does not append `.opencode/` to the target or copy configuration, contributor instructions, planning artifacts, or installer manifests. `--source /path/to/another/agent-skills-checkout` selects another source repository root. `--help` prints usage.
+The copier creates missing folders and does not require Git. It copies only this repository's adapted `adapters/opencode/` assets; it does not append `.opencode/` to the target or copy configuration, contributor instructions, planning artifacts, or installer manifests. `--source /path/to/another/agent-skills-checkout` selects another source repository root. `--help` prints usage.
 
 Missing artifacts are added automatically. Identical artifacts are left unchanged. When an existing artifact's source-matching files differ in content or permissions, the copier asks for:
 
@@ -50,16 +50,16 @@ All answers are collected before copying. Invalid answers repeat the prompt; Ctr
 
 | Assets | Upstream-facing source | OpenCode adaptation |
 |---|---|---|
-| Skills | `skills/` | `.opencode/skills/` |
-| Personas | `agents/` | `.opencode/agents/` |
-| Shared checklists | `references/` | `.opencode/references/` |
-| Commands | `.claude/commands/` and other adapters | `.opencode/commands/` |
+| Skills | `skills/` | `adapters/opencode/skills/` |
+| Personas | `agents/` | `adapters/opencode/agents/` |
+| Shared checklists | `references/` | `adapters/opencode/references/` |
+| Commands | `.claude/commands/` and other adapters | `adapters/opencode/commands/` |
 
 From an installed skill, `../../references/` resolves to `.opencode/references/`; from an installed persona or command, `../references/` reaches the same directory.
 
-`.opencode/adapter-overrides.json` records reviewed differences with keys relative to the upstream-facing root, such as `skills/context-engineering/SKILL.md`, and a nonempty reason as the value. Unlisted files must match exactly. A deliberately retained fork-only file uses `{ "reason": "...", "forkOnly": true }`; this exception cannot be used for a file that still exists upstream. Declarations for missing or identical files fail validation.
+`adapters/opencode/adapter-overrides.json` records reviewed differences with keys relative to the upstream-facing root, such as `skills/context-engineering/SKILL.md`, and a nonempty reason as the value. Unlisted files must match exactly. A deliberately retained fork-only file uses `{ "reason": "...", "forkOnly": true }`; this exception cannot be used for a file that still exists upstream. Declarations for missing or identical files fail validation.
 
-Commands have host-specific bodies; command validation checks inventory, descriptions, and frontmatter rather than byte equality. Skill/persona/reference validation checks inventories and declared adaptations. Upstream changes must be reviewed and ported; never overwrite `.opencode/` with a bulk copy after adaptations exist.
+Commands have host-specific bodies; command validation checks inventory, descriptions, and frontmatter rather than byte equality. Skill/persona/reference validation checks inventories and declared adaptations. Upstream changes must be reviewed and ported; never overwrite `adapters/opencode/` with a bulk copy after adaptations exist.
 
 ## Skill discovery and optional project rules
 
@@ -98,9 +98,9 @@ The pack ships nine optional lifecycle commands:
 
 Personas in `.opencode/agents/` use `mode: subagent`. Users invoke them with `@code-reviewer`, `@security-auditor`, `@test-engineer`, or `@web-performance-auditor`. The main agent dispatches through the Task tool with the corresponding `subagent_type`; independent review calls can run concurrently.
 
-Personas do not delegate to other personas by pack policy. This is not a claim about OpenCode's maximum supported nesting depth. `/ship` discloses sequential fallback when dispatch is unavailable and returns NO-GO when a required pass cannot be completed. See the installed [orchestration reference](../.opencode/references/orchestration-patterns.md).
+Personas do not delegate to other personas by pack policy. This is not a claim about OpenCode's maximum supported nesting depth. `/ship` discloses sequential fallback when dispatch is unavailable and returns NO-GO when a required pass cannot be completed. See the installed [orchestration reference](../adapters/opencode/references/orchestration-patterns.md).
 
-## Planning artifacts and permissions
+## Planning artifacts
 
 The adapted commands and skills agree on these paths:
 
@@ -110,33 +110,13 @@ The adapted commands and skills agree on these paths:
 
 Existing incomplete plans must not be overwritten by unrelated work.
 
-The repository's `.opencode/opencode.json` allows the Plan agent to save the index, module specifications, and designated task/plan artifacts through edit tools:
-
-```json
-{
-  "agent": {
-    "plan": {
-      "permission": {
-        "edit": {
-          "*": "deny",
-          ".opencode/spec/SPEC.md": "allow",
-          ".opencode/spec/SPEC-*.md": "allow",
-          ".opencode/tasks/plan.md": "allow",
-          ".opencode/tasks/todo.md": "allow"
-        }
-      }
-    }
-  }
-}
-```
-
-The installer does not apply this configuration to other projects. Merge the narrow exception into existing configuration if you want Plan mode to save artifacts. The module-spec glob does not grant arbitrary project edits; external specification paths remain governed by the host's own permissions. If the active permissions deny an artifact, the command presents its output and explains that Build mode or a permission change is needed to save it. Planning never authorizes implementation edits. Other tool permissions remain governed by the host configuration.
+OpenCode's Plan mode limits the model to its own plan file, so a Plan-agent edit permission in `opencode.json` does not make it save these artifacts. In Plan mode, `/spec` and `/plan` present their output; switch to Build mode to save it. Saving planning artifacts never authorizes implementation edits.
 
 ## Verification and compatibility
 
 ```bash
 node scripts/validate-skills.js
-node scripts/validate-skills.js .opencode/skills
+node scripts/validate-skills.js adapters/opencode/skills
 node scripts/validate-opencode-mirrors.js
 node scripts/validate-reference-links.js
 node scripts/validate-artifact-paths.js

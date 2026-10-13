@@ -23,7 +23,7 @@ jobs:
         run: node scripts/validate-skills.js
 
       - name: Validate adapted OpenCode skills
-        run: node scripts/validate-skills.js .opencode/skills
+        run: node scripts/validate-skills.js adapters/opencode/skills
 
       - name: Test skill lint rules
         run: node --test scripts/lib/skill-lint-test.js
@@ -122,7 +122,7 @@ jobs:
         run: node scripts/validate-skills.js
 
       - name: Validate adapted OpenCode skills
-        run: node scripts/validate-skills.js .opencode/skills
+        run: node scripts/validate-skills.js adapters/opencode/skills
 
       - name: Validate manifest versions
         run: node scripts/validate-versions.js

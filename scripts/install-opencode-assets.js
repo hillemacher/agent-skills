@@ -114,10 +114,10 @@ function walkFiles(root, destinationPrefix) {
 
 function sourceAssets(sourceRoot) {
   const locations = [
-    ['.opencode/commands', '.opencode/commands'],
-    ['.opencode/skills', '.opencode/skills'],
-    ['.opencode/agents', '.opencode/agents'],
-    ['.opencode/references', '.opencode/references'],
+    ['adapters/opencode/commands', '.opencode/commands'],
+    ['adapters/opencode/skills', '.opencode/skills'],
+    ['adapters/opencode/agents', '.opencode/agents'],
+    ['adapters/opencode/references', '.opencode/references'],
   ];
   const assets = [];
   for (const [sourceRelative, destinationPrefix] of locations) {

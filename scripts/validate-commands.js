@@ -3,10 +3,10 @@
  * validate-commands.js
  *
  * Guards against silent drift across the four slash-command directories:
- *   .claude/commands/   (.md   — Claude Code)
- *   .gemini/commands/   (.toml — Gemini CLI)
- *   commands/           (.toml — Antigravity CLI)
- *   .opencode/commands/ (.md   — OpenCode)
+ *   .claude/commands/           (.md   — Claude Code)
+ *   .gemini/commands/           (.toml — Gemini CLI)
+ *   commands/                   (.toml — Antigravity CLI)
+ *   adapters/opencode/commands/ (.md   — OpenCode)
  *
  * Checks (errors block CI):
  *   - Every command present in one directory exists in all four
@@ -41,7 +41,7 @@ const DIRS = {
   claude:     { dir: path.join(ROOT, '.claude', 'commands'),   ext: '.md'   },
   gemini:     { dir: path.join(ROOT, '.gemini', 'commands'),   ext: '.toml' },
   antigravity:{ dir: path.join(ROOT, 'commands'),              ext: '.toml' },
-  opencode:   { dir: path.join(ROOT, '.opencode', 'commands'), ext: '.md'   },
+  opencode:   { dir: path.join(ROOT, 'adapters', 'opencode', 'commands'), ext: '.md'   },
 };
 
 // Commands where the file stem differs between Claude and the TOML dirs.
@@ -134,7 +134,7 @@ function main() {
     const missing  = [];
     if (!(tomlStem in byTool.gemini))      missing.push('.gemini/commands');
     if (!(tomlStem in byTool.antigravity)) missing.push('commands');
-    if (!(stem in byTool.opencode))        missing.push('.opencode/commands');
+    if (!(stem in byTool.opencode))        missing.push('adapters/opencode/commands');
     if (missing.length) {
       console.log(`  ✗  ${stem} — missing in: ${missing.join(', ')}`);
       errors++;
@@ -152,10 +152,10 @@ function main() {
     }
   }
 
-  // Commands in .opencode/commands not found in Claude
+  // Commands in adapters/opencode/commands not found in Claude
   for (const stem of [...opencodeStems].sort()) {
     if (!(stem in byTool.claude)) {
-      console.log(`  ✗  ${stem} — present in .opencode/commands but missing in .claude/commands`);
+      console.log(`  ✗  ${stem} — present in adapters/opencode/commands but missing in .claude/commands`);
       errors++;
     }
   }
@@ -201,10 +201,10 @@ function main() {
     const descOpencode  = byTool.opencode[claudeStem];
 
     const malformed = [
-      ['.claude/commands',   byTool.claude,      claudeStem],
-      ['.gemini/commands',   byTool.gemini,      tomlStem],
-      ['commands/',          byTool.antigravity, tomlStem],
-      ['.opencode/commands', byTool.opencode,    claudeStem],
+      ['.claude/commands',           byTool.claude,      claudeStem],
+      ['.gemini/commands',           byTool.gemini,      tomlStem],
+      ['commands/',                  byTool.antigravity, tomlStem],
+      ['adapters/opencode/commands', byTool.opencode,    claudeStem],
     ].filter(([, commands, stem]) => Object.prototype.hasOwnProperty.call(commands, stem) && commands[stem] == null);
 
     if (malformed.length) {
@@ -227,10 +227,10 @@ function main() {
       console.log(`  ✓  ${claudeStem}`);
     } else {
       console.log(`  ✗  ${claudeStem}`);
-      console.log(`       .claude:      ${descClaude}`);
-      console.log(`       .gemini:      ${descGemini}`);
-      console.log(`       commands/:    ${descAgy}`);
-      console.log(`       .opencode:    ${descOpencode}`);
+      console.log(`       .claude:           ${descClaude}`);
+      console.log(`       .gemini:           ${descGemini}`);
+      console.log(`       commands/:         ${descAgy}`);
+      console.log(`       adapters/opencode: ${descOpencode}`);
       errors++;
     }
   }

@@ -31,16 +31,16 @@ function read(root, relativePath) {
 
 function source() {
   const root = sandbox();
-  write(root, '.opencode/agents/a.md', 'Agent A: ../references/checklist.md\n');
-  write(root, '.opencode/agents/b.md', 'Agent B\n');
-  write(root, '.opencode/commands/review.md', 'Review: ../references/checklist.md\n');
-  write(root, '.opencode/references/checklist.md', 'Checklist\n');
-  write(root, '.opencode/skills/example/SKILL.md', 'Example: ../../references/checklist.md\n');
-  write(root, '.opencode/skills/example/scripts/run.sh', '#!/bin/sh\necho run\n', 0o755);
-  write(root, '.opencode/skills/example/references/local.md', 'Local reference\n');
+  write(root, 'adapters/opencode/agents/a.md', 'Agent A: ../references/checklist.md\n');
+  write(root, 'adapters/opencode/agents/b.md', 'Agent B\n');
+  write(root, 'adapters/opencode/commands/review.md', 'Review: ../references/checklist.md\n');
+  write(root, 'adapters/opencode/references/checklist.md', 'Checklist\n');
+  write(root, 'adapters/opencode/skills/example/SKILL.md', 'Example: ../../references/checklist.md\n');
+  write(root, 'adapters/opencode/skills/example/scripts/run.sh', '#!/bin/sh\necho run\n', 0o755);
+  write(root, 'adapters/opencode/skills/example/references/local.md', 'Local reference\n');
   write(root, 'skills/example/SKILL.md', 'Upstream content\n');
-  write(root, '.opencode/opencode.json', '{"private":true}\n');
-  write(root, '.opencode/spec/SPEC.md', 'Contributor spec\n');
+  write(root, 'adapters/opencode/opencode.json', '{"private":true}\n');
+  write(root, 'adapters/opencode/spec/SPEC.md', 'Contributor spec\n');
   write(root, 'AGENTS.md', 'Contributor rules\n');
   return root;
 }
@@ -64,9 +64,9 @@ test('copies complete adapted assets into a missing non-Git target and preserves
   const target = path.join(sandbox(), 'missing', 'assets');
   const result = run(sourceRoot, target);
   success(result);
-  assert.equal(read(target, 'agents/a.md'), read(sourceRoot, '.opencode/agents/a.md'));
-  assert.equal(read(target, 'commands/review.md'), read(sourceRoot, '.opencode/commands/review.md'));
-  assert.equal(read(target, 'skills/example/SKILL.md'), read(sourceRoot, '.opencode/skills/example/SKILL.md'));
+  assert.equal(read(target, 'agents/a.md'), read(sourceRoot, 'adapters/opencode/agents/a.md'));
+  assert.equal(read(target, 'commands/review.md'), read(sourceRoot, 'adapters/opencode/commands/review.md'));
+  assert.equal(read(target, 'skills/example/SKILL.md'), read(sourceRoot, 'adapters/opencode/skills/example/SKILL.md'));
   assert.equal(read(target, 'skills/example/references/local.md'), 'Local reference\n');
   if (process.platform !== 'win32') assert.equal(fs.statSync(path.join(target, 'skills/example/scripts/run.sh')).mode & 0o777, 0o755);
   assert.equal(fs.existsSync(path.resolve(target, 'skills/example', '../../references/checklist.md')), true);
@@ -82,7 +82,7 @@ test('adds missing files without deleting unrelated artifacts or rewriting ident
   write(target, 'agents/custom.md', 'Custom agent\n');
   write(target, 'skills/custom/SKILL.md', 'Custom skill\n');
   write(target, 'skills/example/notes.md', 'Local notes\n');
-  write(target, 'skills/example/SKILL.md', read(sourceRoot, '.opencode/skills/example/SKILL.md'));
+  write(target, 'skills/example/SKILL.md', read(sourceRoot, 'adapters/opencode/skills/example/SKILL.md'));
   const identicalFile = path.join(target, 'skills/example/SKILL.md');
   fs.utimesSync(identicalFile, new Date(100000), new Date(100000));
   const mtime = fs.statSync(identicalFile).mtimeMs;
@@ -90,7 +90,7 @@ test('adds missing files without deleting unrelated artifacts or rewriting ident
   assert.equal(read(target, 'agents/custom.md'), 'Custom agent\n');
   assert.equal(read(target, 'skills/custom/SKILL.md'), 'Custom skill\n');
   assert.equal(read(target, 'skills/example/notes.md'), 'Local notes\n');
-  assert.equal(read(target, 'skills/example/scripts/run.sh'), read(sourceRoot, '.opencode/skills/example/scripts/run.sh'));
+  assert.equal(read(target, 'skills/example/scripts/run.sh'), read(sourceRoot, 'adapters/opencode/skills/example/scripts/run.sh'));
   assert.equal(fs.statSync(identicalFile).mtimeMs, mtime);
   const repeat = run(sourceRoot, target);
   success(repeat);
@@ -117,8 +117,8 @@ test('dry run lists additions, unchanged artifacts, and conflicts without prompt
 
 test('replace merges one whole skill and skip leaves every file in that skill untouched', () => {
   const sourceRoot = source();
-  write(sourceRoot, '.opencode/skills/second/SKILL.md', 'Second skill\n');
-  write(sourceRoot, '.opencode/skills/second/new.md', 'New supporting file\n');
+  write(sourceRoot, 'adapters/opencode/skills/second/SKILL.md', 'Second skill\n');
+  write(sourceRoot, 'adapters/opencode/skills/second/new.md', 'New supporting file\n');
   const target = sandbox();
   write(target, 'skills/example/SKILL.md', 'Customized example\n');
   write(target, 'skills/example/scripts/run.sh', 'Customized script\n');
@@ -126,8 +126,8 @@ test('replace merges one whole skill and skip leaves every file in that skill un
   write(target, 'skills/second/SKILL.md', 'Customized second\n');
   const result = run(sourceRoot, target, { input: 'replace\nskip\n' });
   success(result);
-  assert.equal(read(target, 'skills/example/SKILL.md'), read(sourceRoot, '.opencode/skills/example/SKILL.md'));
-  assert.equal(read(target, 'skills/example/scripts/run.sh'), read(sourceRoot, '.opencode/skills/example/scripts/run.sh'));
+  assert.equal(read(target, 'skills/example/SKILL.md'), read(sourceRoot, 'adapters/opencode/skills/example/SKILL.md'));
+  assert.equal(read(target, 'skills/example/scripts/run.sh'), read(sourceRoot, 'adapters/opencode/skills/example/scripts/run.sh'));
   assert.equal(read(target, 'skills/example/references/local.md'), 'Local reference\n');
   assert.equal(read(target, 'skills/example/notes.md'), 'Local notes\n');
   assert.equal(read(target, 'skills/second/SKILL.md'), 'Customized second\n');
@@ -138,17 +138,17 @@ test('replace merges one whole skill and skip leaves every file in that skill un
 
 test('replace-all and skip-all apply only to remaining conflicts of the current type', () => {
   const sourceRoot = source();
-  write(sourceRoot, '.opencode/commands/ship.md', 'Ship\n');
-  write(sourceRoot, '.opencode/references/other.md', 'Other checklist\n');
-  write(sourceRoot, '.opencode/skills/second/SKILL.md', 'Second\n');
+  write(sourceRoot, 'adapters/opencode/commands/ship.md', 'Ship\n');
+  write(sourceRoot, 'adapters/opencode/references/other.md', 'Other checklist\n');
+  write(sourceRoot, 'adapters/opencode/skills/second/SKILL.md', 'Second\n');
   const target = sandbox();
   for (const relative of ['agents/a.md', 'agents/b.md', 'commands/review.md', 'commands/ship.md', 'references/checklist.md', 'references/other.md', 'skills/example/SKILL.md', 'skills/second/SKILL.md']) {
     write(target, relative, 'Local\n');
   }
-  write(sourceRoot, '.opencode/commands/new.md', 'New command\n');
+  write(sourceRoot, 'adapters/opencode/commands/new.md', 'New command\n');
   const result = run(sourceRoot, target, { input: 'ra\nsa\nreplace all\nskip all\n' });
   success(result);
-  assert.equal(read(target, 'agents/a.md'), read(sourceRoot, '.opencode/agents/a.md'));
+  assert.equal(read(target, 'agents/a.md'), read(sourceRoot, 'adapters/opencode/agents/a.md'));
   assert.equal(read(target, 'agents/b.md'), 'Agent B\n');
   assert.equal(read(target, 'commands/review.md'), 'Local\n');
   assert.equal(read(target, 'commands/ship.md'), 'Local\n');
@@ -170,7 +170,7 @@ test('individual decisions remain individual, blank skips, and invalid answers r
   const result = run(sourceRoot, target, { input: 'nonsense\nr\n\n' });
   success(result);
   assert.match(result.stdout, /Invalid answer/);
-  assert.equal(read(target, 'agents/a.md'), read(sourceRoot, '.opencode/agents/a.md'));
+  assert.equal(read(target, 'agents/a.md'), read(sourceRoot, 'adapters/opencode/agents/a.md'));
   assert.equal(read(target, 'agents/b.md'), 'Local B\n');
   assert.equal((result.stdout.match(/\[r\/s\/ra\/sa\]/g) || []).length, 3);
 });
@@ -199,7 +199,7 @@ test('rejects symlinks in source assets and destination paths before any writes'
     fs.mkdirSync(target);
     const outside = path.join(root, 'outside');
     fs.mkdirSync(outside);
-    if (kind === 'source') fs.symlinkSync(outside, path.join(sourceRoot, '.opencode/skills/link'), process.platform === 'win32' ? 'junction' : 'dir');
+    if (kind === 'source') fs.symlinkSync(outside, path.join(sourceRoot, 'adapters/opencode/skills/link'), process.platform === 'win32' ? 'junction' : 'dir');
     else if (kind === 'target') {
       fs.rmdirSync(target);
       fs.symlinkSync(outside, target, process.platform === 'win32' ? 'junction' : 'dir');
@@ -232,7 +232,7 @@ test('rejects directory/file mismatches and missing source directories before an
     if (kind === 'type') write(target, 'skills', 'Not a folder\n');
     if (kind === 'file') fs.mkdirSync(path.join(target, 'agents/a.md'), { recursive: true });
     if (kind === 'resource') write(target, 'skills/example/scripts', 'Not a folder\n');
-    if (kind === 'source') fs.rmSync(path.join(sourceRoot, '.opencode/references'), { recursive: true });
+    if (kind === 'source') fs.rmSync(path.join(sourceRoot, 'adapters/opencode/references'), { recursive: true });
     const result = run(sourceRoot, target);
     assert.equal(result.status, 3, result.stdout + result.stderr);
     assert.match(result.stderr, /directory|regular file|missing/i);
@@ -242,7 +242,7 @@ test('rejects directory/file mismatches and missing source directories before an
 
 test('rejects overlapping source and destination roots, including nonexistent nested targets', () => {
   const sourceRoot = source();
-  for (const target of [sourceRoot, path.join(sourceRoot, '.opencode'), path.join(sourceRoot, 'missing', 'target'), path.dirname(sourceRoot)]) {
+  for (const target of [sourceRoot, path.join(sourceRoot, 'adapters/opencode'), path.join(sourceRoot, 'missing', 'target'), path.dirname(sourceRoot)]) {
     const result = run(sourceRoot, target);
     assert.equal(result.status, 3, result.stdout + result.stderr);
     assert.match(result.stderr, /overlap/);
@@ -267,7 +267,7 @@ test('copies empty skill resource directories when merging an otherwise identica
   const sourceRoot = source();
   const target = sandbox();
   success(run(sourceRoot, target));
-  fs.mkdirSync(path.join(sourceRoot, '.opencode/skills/example/empty'));
+  fs.mkdirSync(path.join(sourceRoot, 'adapters/opencode/skills/example/empty'));
   success(run(sourceRoot, target));
   assert.equal(fs.statSync(path.join(target, 'skills/example/empty')).isDirectory(), true);
 });

@@ -149,7 +149,7 @@ Don't silently fill in ambiguous requirements. The spec's entire purpose is to s
 [Anything unresolved that needs human input]
 ```
 
-**Output convention:** For a single capability, save the approved specification to `.opencode/spec/SPEC.md`. For multi-module work, that path is the capability-map index and each selected module has its own specification as described in Phase 0. Save only artifacts permitted by the current host; if a module path is denied in Plan mode, present the content and explain that a narrow permission exception or Build mode is needed.
+**Output convention:** For a single capability, save the approved specification to `.opencode/spec/SPEC.md`. For multi-module work, that path is the capability-map index and each selected module has its own specification as described in Phase 0. OpenCode Plan mode does not write files: present the approved content there and ask the user to switch to Build mode to save it.
 
 **External spec tools:** This workflow is format-agnostic. If the project
 already uses OpenSpec or another specification system, keep that system's

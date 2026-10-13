@@ -7,7 +7,7 @@
   "skills/constraint-driven-development/SKILL.md": "Use optional existing instructions instead of requiring two rules files.",
   "skills/doubt-driven-development/SKILL.md": "Use fresh OpenCode Task review sessions and on-prem models without external model CLIs.",
   "skills/code-review-and-quality/SKILL.md": "Constrain optional second-model review to host-configured on-prem models.",
-  "skills/planning-and-task-breakdown/SKILL.md": "Record specification/module/task-target handoff and persist permitted OpenCode planning artifacts.",
+  "skills/planning-and-task-breakdown/SKILL.md": "Record specification/module/task-target handoff and save OpenCode planning artifacts outside Plan mode.",
   "skills/spec-driven-development/SKILL.md": "Use OpenCode capability-index/module paths and hand off approved local or external specifications.",
   "agents/code-reviewer.md": "Describe actual OpenCode command dispatch and link the installed composition reference.",
   "agents/test-engineer.md": "Describe actual OpenCode command dispatch and link the installed composition reference.",

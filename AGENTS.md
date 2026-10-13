@@ -6,16 +6,16 @@ This file provides guidance to AI coding agents (Claude Code, Cursor, Copilot, A
 
 ## Repository Overview
 
-An OpenCode-focused fork of addyosmani/agent-skills. Root skills, personas, and references remain upstream-facing; reviewed OpenCode adaptations live in `.opencode/`.
+An OpenCode-focused fork of addyosmani/agent-skills. Root skills, personas, and references remain upstream-facing; reviewed OpenCode adaptations live in `adapters/opencode/`, the source of the pack installed into consumer projects' `.opencode/`.
 
 ## OpenCode Integration
 
-OpenCode uses a **skill-driven execution model** powered by the `skill` tool and this repository's `.opencode/skills/` directory.
+OpenCode uses a **skill-driven execution model** powered by the `skill` tool and the skills installed from this repository's `adapters/opencode/skills/` directory.
 
 ### Core Rules
 
 - If a task matches a skill, you MUST invoke it
-- OpenCode skills are checked-in copies in `.opencode/skills/<skill-name>/SKILL.md`. Preserve root compatibility assets and declare intentional adaptations in `.opencode/adapter-overrides.json`.
+- OpenCode skills are checked-in copies in `adapters/opencode/skills/<skill-name>/SKILL.md`. Preserve root compatibility assets and declare intentional adaptations in `adapters/opencode/adapter-overrides.json`.
 - Never implement directly if a skill applies
 - Always follow the skill instructions exactly (do not partially apply them)
 
@@ -33,7 +33,7 @@ The agent should automatically map user intent to skills:
 
 ### Lifecycle Mapping (Implicit Commands)
 
-OpenCode supports the optional wrappers in `.opencode/commands/`; for natural-language requests, the agent must internally follow this lifecycle:
+OpenCode supports the optional wrappers in `adapters/opencode/commands/`; for natural-language requests, the agent must internally follow this lifecycle:
 
 - DEFINE → `spec-driven-development`
 - PLAN → `planning-and-task-breakdown`
@@ -71,13 +71,13 @@ This repo has three composable layers. They have different jobs and should not b
 
 - **Skills** (`skills/<name>/SKILL.md`) — workflows with steps and exit criteria. The *how*. Mandatory hops when an intent matches.
 - **Personas** (`agents/<role>.md`) — roles with a perspective and an output format. The *who*.
-- **Slash commands** (`.claude/commands/*.md`, `.opencode/commands/*.md`) — user-facing entry points. The *when*. The orchestration layer.
+- **Slash commands** (`.claude/commands/*.md`, `adapters/opencode/commands/*.md`) — user-facing entry points. The *when*. The orchestration layer.
 
 Composition rule: **the user (or a slash command) is the orchestrator. Personas do not invoke other personas.** A persona may invoke skills.
 
 The only multi-persona orchestration pattern this repo endorses is **parallel fan-out with a merge step** — used by `/ship` to run `code-reviewer`, `security-auditor`, and `test-engineer` concurrently and synthesize their reports. Do not build a "router" persona that decides which other persona to call; that's the job of slash commands and intent mapping.
 
-See [docs/agents.md](docs/agents.md) for the decision matrix and [OpenCode orchestration patterns](.opencode/references/orchestration-patterns.md) for the full pattern catalog.
+See [docs/agents.md](docs/agents.md) for the decision matrix and [OpenCode orchestration patterns](adapters/opencode/references/orchestration-patterns.md) for the full pattern catalog.
 
 **Compatibility only — Claude Code interop:** the personas in `agents/` work as Claude Code subagents (auto-discovered from this plugin's `agents/` directory) and as Agent Teams teammates (referenced by name when spawning). Two platform constraints align with our rules: subagents cannot spawn other subagents, and teams cannot nest. Plugin agents silently ignore the `hooks`, `mcpServers`, and `permissionMode` frontmatter fields.
 
@@ -91,4 +91,4 @@ For the full format, naming conventions, frontmatter rules, supporting-file thre
 
 ## Upstream maintenance
 
-Use the tracked `.agents/skills/upstream-sync/SKILL.md` for upstream review and approved synchronization. The skill and its `.claude/skills/upstream-sync` symlink are available in fresh clones but excluded from the consumer pack. Other local skills under `.agents/skills/` and `.claude/skills/` remain ignored by Git. Skills, personas, and references under `.opencode/` are adapted copies, not symlinks or unconditional byte-for-byte mirrors. Preserve the OpenCode-only wording and host-configured on-prem model policy when porting upstream changes; do not introduce external AI model calls into `.opencode/`. Validate both skill trees, declared adaptations, artifact paths, and installed links. Never bulk-copy over adaptations, merge without explicit approval, or push without separate authorization.
+Use the tracked `.agents/skills/upstream-sync/SKILL.md` for upstream review and approved synchronization. The skill and its `.claude/skills/upstream-sync` symlink are available in fresh clones but excluded from the consumer pack. Other local skills under `.agents/skills/` and `.claude/skills/` remain ignored by Git. Skills, personas, and references under `adapters/opencode/` are adapted copies, not symlinks or unconditional byte-for-byte mirrors. Preserve the OpenCode-only wording and host-configured on-prem model policy when porting upstream changes; do not introduce external AI model calls into `adapters/opencode/`. Validate both skill trees, declared adaptations, artifact paths, and installed links. Never bulk-copy over adaptations, merge without explicit approval, or push without separate authorization.

@@ -14,7 +14,7 @@ The repo has five composable layers. Understanding what each one is *for* preven
 |---|---|---|---|
 | **Skills** | `skills/<name>/SKILL.md` | Step-by-step workflows with verification gates | *How* |
 | **Personas** | `agents/<role>.md` | Roles with a perspective and output format | *Who* |
-| **Commands** | `.opencode/commands/` plus compatibility command adapters | User-facing entry points; the orchestration layer | *When* |
+| **Commands** | `adapters/opencode/commands/` plus compatibility command adapters | User-facing entry points; the orchestration layer | *When* |
 | **References** | `references/*.md` | Checklists skills pull in on demand | *What to check* |
 | **Evals** | `evals/cases/<name>.json` | Proof that skills trigger and behave correctly | *Does it work* |
 
@@ -41,10 +41,12 @@ There's no build step and no `package.json`; validators are plain Node scripts. 
 - **`gh` CLI** for the duplicate-PR check before proposing a skill
 - **Claude Code** only for compatibility plugin checks or Tier 3 behavioral evals; these do not exercise OpenCode
 
-To try the pack live against a local checkout:
+To try the pack live, install it into a scratch Git repository and run OpenCode there. The checkout itself is the pack source, not an OpenCode project:
 
 ```bash
-opencode # run from this checkout; adapted assets are discovered under .opencode/
+mkdir -p /tmp/agent-skills-try && git -C /tmp/agent-skills-try init
+node scripts/install-opencode-assets.js /tmp/agent-skills-try
+cd /tmp/agent-skills-try && opencode
 ```
 
 ## 3. The verification loop
@@ -54,7 +56,7 @@ The repo eats its own cooking: verification is non-negotiable for skills, and it
 ```bash
 # Tier 1, structural: root and adapted skill trees
 node scripts/validate-skills.js
-node scripts/validate-skills.js .opencode/skills
+node scripts/validate-skills.js adapters/opencode/skills
 node scripts/validate-opencode-mirrors.js
 node scripts/validate-reference-links.js
 node scripts/validate-artifact-paths.js
@@ -81,7 +83,7 @@ Run the relevant subset before every PR. A PR that arrives green through Tier 1 
 
 ### OpenCode adaptations and upstream updates
 
-Make OpenCode-specific edits in `.opencode/skills/`, `.opencode/agents/`, and `.opencode/references/`. Preserve upstream-facing root files. Declare each intentional difference in `.opencode/adapter-overrides.json`; undeclared or stale differences fail validation. Copy complete supporting resources when porting new skills. See [OpenCode setup](opencode-setup.md) for the declaration format.
+Make OpenCode-specific edits in `adapters/opencode/skills/`, `adapters/opencode/agents/`, and `adapters/opencode/references/`. Preserve upstream-facing root files. Declare each intentional difference in `adapters/opencode/adapter-overrides.json`; undeclared or stale differences fail validation. Copy complete supporting resources when porting new skills. See [OpenCode setup](opencode-setup.md) for the declaration format.
 
 Use the tracked `.agents/skills/upstream-sync/SKILL.md` to review upstream deltas before an approved merge. It and its Claude Code discovery symlink are available in fresh clones and are not shipped in the consumer pack. Other local maintenance skills remain ignored by Git. Never bulk-copy over adapted content.
 

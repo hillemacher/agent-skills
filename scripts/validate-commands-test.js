@@ -43,7 +43,7 @@ function writeClaudeCommand(root, stem, descriptionLine) {
 function writeOpenCodeCommand(root, stem, descriptionLine) {
   writeFile(
     root,
-    path.join('.opencode', 'commands', `${stem}.md`),
+    path.join('adapters', 'opencode', 'commands', `${stem}.md`),
     `---\n${descriptionLine}\n---\n\n# Command\n`,
   );
 }

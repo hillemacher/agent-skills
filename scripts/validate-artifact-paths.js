@@ -65,12 +65,13 @@ const GUARDED_FILES = [
   'commands/planning.toml',
   'commands/build.toml',
   // OpenCode commands (fork extension)
-  '.opencode/commands/spec.md',
-  '.opencode/commands/plan.md',
-  '.opencode/commands/build.md',
-  '.opencode/skills/spec-driven-development/SKILL.md',
-  '.opencode/skills/planning-and-task-breakdown/SKILL.md',
-  // OpenCode producers and consumers may only use the .opencode/ paths.
+  'adapters/opencode/commands/spec.md',
+  'adapters/opencode/commands/plan.md',
+  'adapters/opencode/commands/build.md',
+  'adapters/opencode/skills/spec-driven-development/SKILL.md',
+  'adapters/opencode/skills/planning-and-task-breakdown/SKILL.md',
+  // OpenCode producers and consumers (sources under adapters/opencode/) may only
+  // use the .opencode/ paths they write in the consumer project.
   // Compatibility skills retain root defaults.
   // Skills the commands invoke
   'skills/spec-driven-development/SKILL.md',
@@ -100,8 +101,8 @@ function findViolations(relPath) {
     for (const match of matches) {
       const modulePath = /^\.opencode\/spec\/SPEC-(?:[a-z0-9]+(?:-[a-z0-9]+)*|<module>)\.md$/.test(match);
       const compatibilityModule = /^SPEC-[a-z0-9]+(?:-[a-z0-9]+)*\.md$/.test(match);
-      const approved = ARTIFACT_ALLOWLIST.has(match) || modulePath || (!relPath.startsWith('.opencode/') && compatibilityModule);
-      if (!approved || (relPath.startsWith('.opencode/') && !match.startsWith('.opencode/'))) {
+      const approved = ARTIFACT_ALLOWLIST.has(match) || modulePath || (!relPath.startsWith('adapters/opencode/') && compatibilityModule);
+      if (!approved || (relPath.startsWith('adapters/opencode/') && !match.startsWith('.opencode/'))) {
         violations.push({ line: i + 1, match });
       }
     }
@@ -128,24 +129,6 @@ function main() {
         console.log(`       L${line}: ${match} — not an approved spec/plan/todo artifact path`);
         errors++;
       }
-    }
-  }
-
-  // A valid producer path must also be writable under the repo's narrow Plan policy.
-  // Consumer installations may omit this configuration entirely.
-  const configFile = path.join(ROOT, '.opencode', 'opencode.json');
-  if (fs.existsSync(configFile)) {
-    try {
-      const config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
-      const edit = config.agent?.plan?.permission?.edit;
-      const required = ['.opencode/spec/SPEC.md', '.opencode/spec/SPEC-*.md', '.opencode/tasks/plan.md', '.opencode/tasks/todo.md'];
-      if (!edit || typeof edit !== 'object' || Array.isArray(edit) || edit['*'] !== 'deny' || required.some((key) => edit[key] !== 'allow') || Object.entries(edit).some(([key, value]) => key !== '*' && value !== 'deny' && !required.includes(key))) {
-        console.log('  ✗  .opencode/opencode.json — Plan edit permissions must allow the index, module specs, plan and todo artifacts, and deny other writes');
-        errors++;
-      } else console.log('  ✓  .opencode/opencode.json — narrow planning artifact permissions');
-    } catch (error) {
-      console.log(`  ✗  .opencode/opencode.json — ${error.message}`);
-      errors++;
     }
   }
 

@@ -11,13 +11,13 @@ Resolve the approved specification using the handoff in `spec-driven-development
 
 Read the resolved specification and relevant codebase sections. Then:
 
-1. Use Plan mode — no implementation changes; save only permitted planning artifacts
+1. Use Plan mode — read only, no implementation changes
 2. Identify the dependency graph between components
 3. Slice work vertically (one complete path per task, not horizontal layers)
 4. Write tasks with acceptance criteria and verification steps
 5. Add checkpoints between phases
 6. Present the plan for human review
 
-Save the plan to `.opencode/tasks/plan.md`, recording the specification source, selected module and capability-map source when applicable, and task list target. Use the task list target defined by `planning-and-task-breakdown`: by default write `.opencode/tasks/todo.md`; when the user or existing project instructions designate an external tracker, create tasks there instead and keep an ordered index of item IDs/links in the plan. Do not create a duplicate todo checklist for external tracker work. If the designated tracker is unavailable or unauthorized, report that blocker rather than silently switching targets. Writing these planning artifacts in Plan mode depends on the consumer project's current configuration. If the host project denies these paths, present the plan and explain that Build mode or a narrow permission exception is needed to save it.
+Save the plan to `.opencode/tasks/plan.md`, recording the specification source, selected module and capability-map source when applicable, and task list target. Use the task list target defined by `planning-and-task-breakdown`: by default write `.opencode/tasks/todo.md`; when the user or existing project instructions designate an external tracker, create tasks there instead and keep an ordered index of item IDs/links in the plan. Do not create a duplicate todo checklist for external tracker work. If the designated tracker is unavailable or unauthorized, report that blocker rather than silently switching targets. Plan mode does not write files: present the plan and ask the user to switch to Build mode to save these artifacts. Saving them does not authorize implementation.
 
 If `.opencode/tasks/plan.md` or `.opencode/tasks/todo.md` already exists with unchecked tasks for different work, stop and ask before writing — never silently overwrite an incomplete plan.

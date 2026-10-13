@@ -148,7 +148,7 @@ function main() {
   }
 
   // Inspect the actual consumer layout, including static relative markdown links.
-  const adapterRoot = path.join(ROOT, '.opencode');
+  const adapterRoot = path.join(ROOT, 'adapters', 'opencode');
   let adapterChecked = 0;
   function checkAdapter(directory) {
     if (!fs.existsSync(directory)) return;

@@ -12,3 +12,4 @@ evals/plugin/results/
 __pycache__/
 .agents/skills/*
 !.agents/skills/upstream-sync/
+.opencode/

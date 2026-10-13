@@ -1,6 +1,6 @@
 # Claude Code Compatibility
 
-This fork defaults to OpenCode adaptations under `.opencode/`. Claude Code continues to use the root `skills/`, `agents/`, `references/`, `.claude/commands/`, and `.claude-plugin/` assets. Do not copy OpenCode configuration into Claude settings.
+This fork defaults to OpenCode adaptations under `adapters/opencode/`, installed into a project's `.opencode/`. Claude Code continues to use the root `skills/`, `agents/`, `references/`, `.claude/commands/`, and `.claude-plugin/` assets. Do not copy OpenCode configuration into Claude settings.
 
 For fork maintenance, the tracked `.claude/skills/upstream-sync` symlink points to `.agents/skills/upstream-sync/`. Claude Code discovers the symlink as a project skill; OpenCode reads the same instructions through `.agents/skills/`. Both are available in fresh clones and are not included in the consumer pack. Other local skills in these directories remain ignored by Git.
 

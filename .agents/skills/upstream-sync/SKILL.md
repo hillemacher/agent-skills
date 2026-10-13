@@ -7,7 +7,7 @@ description: Review or sync this OpenCode-focused fork against addyosmani/agent-
 
 ## Overview
 
-Root `skills/`, `agents/`, and `references/` remain upstream-facing. `.opencode/skills/`, `.opencode/agents/`, and `.opencode/references/` are checked-in adaptations. `.opencode/commands/` contains host-specific command wrappers. Nothing propagates automatically into these copies.
+Root `skills/`, `agents/`, and `references/` remain upstream-facing. `adapters/opencode/skills/`, `adapters/opencode/agents/`, and `adapters/opencode/references/` are checked-in adaptations. `adapters/opencode/commands/` contains host-specific command wrappers. Nothing propagates automatically into these copies.
 
 This is a tracked fork-maintenance skill, available in fresh clones and outside the installed consumer pack. OpenCode discovers it in `.agents/skills/`; the tracked `.claude/skills/upstream-sync` symlink makes the same instructions available to Claude Code. Read `docs/opencode-setup.md` for the layout and adaptation-declaration format. Never bulk-copy over adaptations. An approval to review or update this skill is not an approval to merge upstream or push.
 
@@ -37,12 +37,12 @@ Set `BASE` to that merge-base commit. If there is no common ancestor, stop and e
 
 ```bash
 git diff --name-status --find-renames "$BASE" "$UPSTREAM" -- skills/ agents/ references/ .claude/commands/ .gemini/commands/ commands/ scripts/ docs/ README.md AGENTS.md CONTRIBUTING.md .github/
-git diff --name-status --find-renames "$BASE" "$LOCAL" -- skills/ agents/ references/ .opencode/ scripts/ docs/ README.md AGENTS.md CONTRIBUTING.md .github/
+git diff --name-status --find-renames "$BASE" "$LOCAL" -- skills/ agents/ references/ adapters/opencode/ scripts/ docs/ README.md AGENTS.md CONTRIBUTING.md .github/
 ```
 
 Report upstream additions, modifications, renames, and deletions separately from fork changes. Inspect content where commit subjects are insufficient. Paths changed on both sides are overlap candidates, not proven merge conflicts. Include renamed source/destination paths when checking overlap.
 
-For each upstream asset, identify its OpenCode counterpart and any entry in `.opencode/adapter-overrides.json`. Command bodies need host-specific porting, not copying Claude namespaces or configuration. Include installer, validator, workflow, and documentation changes that affect the fork.
+For each upstream asset, identify its OpenCode counterpart and any entry in `adapters/opencode/adapter-overrides.json`. Command bodies need host-specific porting, not copying Claude namespaces or configuration. Include installer, validator, workflow, and documentation changes that affect the fork.
 
 Treat the OpenCode adapter's on-prem model policy as a fork adaptation: its skills, commands, personas, references, and declaration reasons must contain no named references to other AI assistants or instructions to send prompts or artifacts to external AI models. Ordinary web-service and development-tool examples are outside this model policy. Flag any incoming content that would violate it for rewriting during porting.
 
@@ -78,16 +78,16 @@ Use `git show "$LOCAL:skills/<name>/SKILL.md"` for the pre-merge source, not the
 
 ```bash
 node scripts/validate-skills.js
-node scripts/validate-skills.js .opencode/skills
+node scripts/validate-skills.js adapters/opencode/skills
 node scripts/validate-commands.js
 node scripts/validate-opencode-mirrors.js
 node scripts/validate-reference-links.js
 node scripts/validate-artifact-paths.js
 node --test scripts/validate-opencode-mirrors-test.js scripts/install-opencode-assets-test.js scripts/validate-reference-links-test.js scripts/validate-artifact-paths-test.js
-rg -n -i '\b(claude|codex|gemini|anthropic|openai|chatgpt|copilot|cursor|windsurf|gpt)([-./ ]|\b)' .opencode
+rg -n -i '\b(claude|codex|gemini|anthropic|openai|chatgpt|copilot|cursor|windsurf|gpt)([-./ ]|\b)' adapters/opencode
 ```
 
-The final search must have no named-assistant matches in `.opencode`; review any match rather than treating unrelated substrings as violations. Inspect model-related instructions for external AI CLI or service fallbacks. Run any additional checks required by changed tooling or skill descriptions. Review the final diff for lost adaptations, incomplete supporting resources, and accidental consumer inclusion of this maintenance skill. Report merge status, conflicts resolved, ported changes, retained assets, tests, and remaining issues. Stop without pushing; obtain separate authorization before a push.
+The final search must have no named-assistant matches in `adapters/opencode`; review any match rather than treating unrelated substrings as violations. Inspect model-related instructions for external AI CLI or service fallbacks. Run any additional checks required by changed tooling or skill descriptions. Review the final diff for lost adaptations, incomplete supporting resources, and accidental consumer inclusion of this maintenance skill. Report merge status, conflicts resolved, ported changes, retained assets, tests, and remaining issues. Stop without pushing; obtain separate authorization before a push.
 
 ## Common Rationalizations
 
@@ -104,7 +104,7 @@ The final search must have no named-assistant matches in `.opencode`; review any
 - Merging with outstanding user changes or an unapproved upstream commit.
 - Treating every shared-file difference as a conflict.
 - Leaving deleted, renamed, or unsupported references in the pack.
-- Reintroducing named assistants or external AI model routing in `.opencode` while porting upstream content.
+- Reintroducing named assistants or external AI model routing in `adapters/opencode` while porting upstream content.
 - Using the merged source as the base of an adaptation merge.
 
 ## Verification
@@ -112,7 +112,7 @@ The final search must have no named-assistant matches in `.opencode`; review any
 - [ ] Upstream changes are reported independently of fork changes.
 - [ ] The approved merge started with a clean worktree.
 - [ ] OpenCode adaptations and complete supporting resources are preserved.
-- [ ] `.opencode` contains no named references to other AI assistants or external AI model workflows.
+- [ ] `adapters/opencode` contains no named references to other AI assistants or external AI model workflows.
 - [ ] Inventory changes and adaptation declarations agree.
 - [ ] Root and adapted validation pass; no consumer maintenance skill is installed.
 - [ ] No push occurred without separate authorization.

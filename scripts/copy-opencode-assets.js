@@ -89,8 +89,8 @@ function walk(directory, prefix, files = [], directories = []) {
 function sourceArtifacts(sourceRoot) {
   const artifacts = [];
   for (const type of TYPES) {
-    const directory = path.join(sourceRoot, '.opencode', type);
-    if (!assertPath(path.join(sourceRoot, '.opencode'), true) || !assertPath(directory, true)) {
+    const directory = path.join(sourceRoot, 'adapters', 'opencode', type);
+    if (!assertPath(path.join(sourceRoot, 'adapters', 'opencode'), true) || !assertPath(directory, true)) {
       throw new CopierError(`Source ${type} directory is missing: ${directory}`);
     }
     if (type === 'skills') {

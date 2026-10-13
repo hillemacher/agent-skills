@@ -4,10 +4,10 @@ Specialist personas that play a single role with a single perspective. Each pers
 
 | Persona | Role | Best for |
 |---------|------|----------|
-| [code-reviewer](../.opencode/agents/code-reviewer.md) | Senior Staff Engineer | Five-axis review before merge |
-| [security-auditor](../.opencode/agents/security-auditor.md) | Security Engineer | Vulnerability detection, OWASP-style audit |
-| [test-engineer](../.opencode/agents/test-engineer.md) | QA Engineer | Test strategy, coverage analysis, Prove-It pattern |
-| [web-performance-auditor](../.opencode/agents/web-performance-auditor.md) | Web Performance Engineer | Core Web Vitals audit, loading/rendering/network analysis |
+| [code-reviewer](../adapters/opencode/agents/code-reviewer.md) | Senior Staff Engineer | Five-axis review before merge |
+| [security-auditor](../adapters/opencode/agents/security-auditor.md) | Security Engineer | Vulnerability detection, OWASP-style audit |
+| [test-engineer](../adapters/opencode/agents/test-engineer.md) | QA Engineer | Test strategy, coverage analysis, Prove-It pattern |
+| [web-performance-auditor](../adapters/opencode/agents/web-performance-auditor.md) | Web Performance Engineer | Core Web Vitals audit, loading/rendering/network analysis |
 
 ## How personas relate to skills and commands
 
@@ -42,7 +42,7 @@ Pick this only when **independent** investigations can run in parallel and produ
 
 - `/ship` → fans out to `code-reviewer` + `security-auditor` + `test-engineer` in parallel, then synthesizes their reports into a go/no-go decision
 
-This is the only orchestration pattern this repo endorses. See [OpenCode orchestration patterns](../.opencode/references/orchestration-patterns.md) for the installed pattern catalog and composition policy.
+This is the only orchestration pattern this repo endorses. See [OpenCode orchestration patterns](../adapters/opencode/references/orchestration-patterns.md) for the installed pattern catalog and composition policy.
 
 ## Decision matrix
 
@@ -104,9 +104,9 @@ Why this fails:
 
 ## OpenCode interop
 
-OpenCode discovers the adapted personas in `.opencode/agents/`. They use `mode: subagent` to restrict them to dispatch rather than selectable primary agents. Users invoke them with `@mentions`; the main session uses the Task tool with the matching `subagent_type` and explicit review scope.
+OpenCode discovers the adapted personas installed in the project's `.opencode/agents/` (sourced from `adapters/opencode/agents/`). They use `mode: subagent` to restrict them to dispatch rather than selectable primary agents. Users invoke them with `@mentions`; the main session uses the Task tool with the matching `subagent_type` and explicit review scope.
 
-The installed [orchestration reference](../.opencode/references/orchestration-patterns.md) describes concurrent dispatch, fallback behavior, and composition policy. Root personas remain upstream-facing compatibility sources. Adapted personas may differ only with a declaration in `.opencode/adapter-overrides.json`.
+The installed [orchestration reference](../adapters/opencode/references/orchestration-patterns.md) describes concurrent dispatch, fallback behavior, and composition policy. Root personas remain upstream-facing compatibility sources. Adapted personas may differ only with a declaration in `adapters/opencode/adapter-overrides.json`.
 
 ## Claude Code compatibility
 
@@ -118,5 +118,5 @@ Root personas and the root orchestration reference retain Claude plugin and Agen
 2. Define the role, scope, output format, and rules.
 3. Add a **Composition** block at the bottom (Invoke directly when / Invoke via / Do not invoke from another persona).
 4. Add the persona to the table at the top of this file.
-5. Port the persona into `.opencode/agents/`, adapting installed links and declaring any intentional differences.
+5. Port the persona into `adapters/opencode/agents/`, adapting installed links and declaring any intentional differences.
 6. If the persona enables a new orchestration pattern, document it in `references/orchestration-patterns.md` rather than inventing the pattern in the persona file itself.
