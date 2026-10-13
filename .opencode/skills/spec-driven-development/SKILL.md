@@ -9,6 +9,8 @@ description: Creates specs before coding. Use when starting a new project, featu
 
 Write a structured specification before writing any code. The spec is the shared source of truth between you and the human engineer — it defines what we're building, why, and how we'll know it's done. Code without a spec is guessing.
 
+**Ticket context.** When the current work belongs to a Jira ticket, the `ticket-work-folders` instruction takes precedence over the default artifact paths documented in this file: write and look up all spec, plan, and task-list artifacts under the ticket's work folder (`.opencode/work/<TICKET-ID>/`), mirroring the default layout. Without a ticket context, the default paths apply unchanged.
+
 ## When to Use
 
 - Starting a new project or feature

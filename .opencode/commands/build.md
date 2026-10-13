@@ -4,6 +4,8 @@ description: Implement tasks incrementally — build, test, verify, commit. Add 
 
 Invoke the incremental-implementation skill alongside test-driven-development.
 
+**Ticket context.** When the current work belongs to a Jira ticket, the `ticket-work-folders` instruction takes precedence over the default artifact paths documented in this file: write and look up all spec, plan, and task-list artifacts under the ticket's work folder (`.opencode/work/<TICKET-ID>/`), mirroring the default layout. Without a ticket context, the default paths apply unchanged.
+
 ## Modes
 
 - **`/build`** — implement the *next* pending task, then stop (careful, one slice at a time).

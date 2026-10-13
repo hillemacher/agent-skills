@@ -9,6 +9,8 @@ description: Breaks work into ordered tasks. Use when you have a spec or clear r
 
 Decompose work into small, verifiable tasks with explicit acceptance criteria. Good task breakdown is the difference between an agent that completes work reliably and one that produces a tangled mess. Every task should be small enough to implement, test, and verify in a single focused session.
 
+**Ticket context.** When the current work belongs to a Jira ticket, the `ticket-work-folders` instruction takes precedence over the default artifact paths documented in this file: write and look up all spec, plan, and task-list artifacts under the ticket's work folder (`.opencode/work/<TICKET-ID>/`), mirroring the default layout. Without a ticket context, the default paths apply unchanged.
+
 ## When to Use
 
 - You have a spec and need to break it into implementable units
