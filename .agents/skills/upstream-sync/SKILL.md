@@ -36,8 +36,8 @@ Set `BASE` to that merge-base commit. If there is no common ancestor, stop and e
 ### 2. Separate upstream and fork changes
 
 ```bash
-git diff --name-status --find-renames "$BASE" "$UPSTREAM" -- skills/ agents/ references/ .claude/commands/ .gemini/commands/ commands/ scripts/ docs/ README.md AGENTS.md CONTRIBUTING.md .github/
-git diff --name-status --find-renames "$BASE" "$LOCAL" -- skills/ agents/ references/ adapters/opencode/ scripts/ docs/ README.md AGENTS.md CONTRIBUTING.md .github/
+git diff --name-status --find-renames "$BASE" "$UPSTREAM" -- skills/ agents/ references/ .claude/commands/ .gemini/commands/ commands/ .opencode/ scripts/ docs/ README.md AGENTS.md CONTRIBUTING.md .github/
+git diff --name-status --find-renames "$BASE" "$LOCAL" -- skills/ agents/ references/ adapters/opencode/ .opencode/ scripts/ docs/ README.md AGENTS.md CONTRIBUTING.md .github/
 ```
 
 Report upstream additions, modifications, renames, and deletions separately from fork changes. Inspect content where commit subjects are insufficient. Paths changed on both sides are overlap candidates, not proven merge conflicts. Include renamed source/destination paths when checking overlap.
@@ -70,6 +70,7 @@ Verify the approved commit IDs still match the comparison. Merge the approved up
 - **Renames:** rename the corresponding adapted asset and supporting directory, preserve adaptations, update skill frontmatter names where appropriate, links, and declaration keys.
 - **Deletions:** remove the adapted counterpart and stale declarations. If the user explicitly chooses to retain it, declare each retained file as fork-only with a reason and verify its remaining dependencies.
 - **Commands:** port behavior through OpenCode syntax; keep command inventory and descriptions aligned without copying host-specific bodies verbatim.
+- **Upstream `.opencode/`:** upstream tracks its own `.opencode/` (currently a `skills -> ../skills/` symlink). This fork does not use it: OpenCode would load the unadapted root skills from it. Keep it deleted. If the merge restores files there or stops on a conflict where upstream changed a path the fork deleted, resolve by deleting them, and port anything meaningful into `adapters/opencode/`.
 - **Model workflows:** keep OpenCode reviews on host-configured on-prem models. Offer a second model only when another on-prem model is configured and selectable through OpenCode; never port external AI CLI fallbacks or hardcode a model endpoint or ID.
 
 Use `git show "$LOCAL:skills/<name>/SKILL.md"` for the pre-merge source, not the newly merged root file, when constructing a three-way adaptation merge. Apply the same principle to personas, references, and supporting files. Binary files require deliberate replacement or retention; do not run text merge tools on them.
@@ -83,11 +84,12 @@ node scripts/validate-commands.js
 node scripts/validate-opencode-mirrors.js
 node scripts/validate-reference-links.js
 node scripts/validate-artifact-paths.js
-node --test scripts/validate-opencode-mirrors-test.js scripts/install-opencode-assets-test.js scripts/validate-reference-links-test.js scripts/validate-artifact-paths-test.js
+node --test scripts/validate-opencode-mirrors-test.js scripts/install-opencode-assets-test.js scripts/copy-opencode-assets-test.js scripts/validate-commands-test.js scripts/validate-reference-links-test.js scripts/validate-artifact-paths-test.js
+git ls-files .opencode
 rg -n -i '\b(claude|codex|gemini|anthropic|openai|chatgpt|copilot|cursor|windsurf|gpt)([-./ ]|\b)' adapters/opencode
 ```
 
-The final search must have no named-assistant matches in `adapters/opencode`; review any match rather than treating unrelated substrings as violations. Inspect model-related instructions for external AI CLI or service fallbacks. Run any additional checks required by changed tooling or skill descriptions. Review the final diff for lost adaptations, incomplete supporting resources, and accidental consumer inclusion of this maintenance skill. Report merge status, conflicts resolved, ported changes, retained assets, tests, and remaining issues. Stop without pushing; obtain separate authorization before a push.
+`git ls-files .opencode` must print nothing. The final search must have no named-assistant matches in `adapters/opencode`; review any match rather than treating unrelated substrings as violations. Inspect model-related instructions for external AI CLI or service fallbacks. Run any additional checks required by changed tooling or skill descriptions. Review the final diff for lost adaptations, incomplete supporting resources, and accidental consumer inclusion of this maintenance skill. Report merge status, conflicts resolved, ported changes, retained assets, tests, and remaining issues. Stop without pushing; obtain separate authorization before a push.
 
 ## Common Rationalizations
 
@@ -106,12 +108,14 @@ The final search must have no named-assistant matches in `adapters/opencode`; re
 - Leaving deleted, renamed, or unsupported references in the pack.
 - Reintroducing named assistants or external AI model routing in `adapters/opencode` while porting upstream content.
 - Using the merged source as the base of an adaptation merge.
+- Keeping upstream's `.opencode/` after a merge instead of deleting it and porting into `adapters/opencode/`.
 
 ## Verification
 
 - [ ] Upstream changes are reported independently of fork changes.
 - [ ] The approved merge started with a clean worktree.
 - [ ] OpenCode adaptations and complete supporting resources are preserved.
+- [ ] No `.opencode/` is tracked after the merge (`git ls-files .opencode` is empty).
 - [ ] `adapters/opencode` contains no named references to other AI assistants or external AI model workflows.
 - [ ] Inventory changes and adaptation declarations agree.
 - [ ] Root and adapted validation pass; no consumer maintenance skill is installed.
